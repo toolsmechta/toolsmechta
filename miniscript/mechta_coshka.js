@@ -10,7 +10,7 @@ function evaluate_number(e) {
 }
 
 function translate_to_number(number){
-    console.log("funciotn not impl");
+    console.log("function not impl");
 }
 
 function get_radix_n(num, a){
@@ -80,7 +80,7 @@ function indexof_size(type) {
         cl = sizes[y * lwidth + 1];
     } else {
         sz = types_unknown;
-        cl = "inherit";
+        cl = "#ff04c0";
     }
 
     return {
