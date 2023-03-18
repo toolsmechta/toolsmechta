@@ -212,7 +212,7 @@
 		  left: 2px;
 		}
 		.copyied{
-			/Standart**/
+			
 		}
 		
 		/* Style the button that is used to open and close the collapsible content */
@@ -277,7 +277,7 @@
 		    case Action.ACT_DEF: // default alert
 		        {
 		            alert("ОПС!");
-		            window.location.replace("https://sun9-88.userapi.com/impg/0I62nVl-IWoHM9madYs069wqkUz8Wg8BIOg8kg/5W2Jx259txM.jpg?size=1066x668&quality=96&sign=1807296bb43e1e7ebe66aef0363a75e7&c_uniq_tag=RfpACuQWoJpJjjCQxw9HJlW50U0525cDtvUHBcDK0tE&type=album");
+		          
 		            break;
 		        }
 		    case Action.ACT_CLOSE_WINDOW: // close by window from lhs
@@ -386,6 +386,10 @@
 		    show_window("#window_loader", closePrevs);
 		}
 
+		function layer_gradient(col){
+			return "linear-gradient("+col+",rgba(0,0,0,0.1))";
+		}
+
 		function copyElem(elem) {
 		    var textArea = document.createElement("textarea");
 			//split by indexes
@@ -428,7 +432,7 @@
 		    document.body.removeChild(textArea);
 		    let node = $(elem.parentNode.parentNode);
 			node.addClass("copyied");
-			node.css("background-color",indexof_size(jsonElem.type).color);
+			node.css("background",layer_gradient(indexof_size(jsonElem.type).color));
 		    elem.innerText = 'Скопировано ✓';
 		    setTimeout(function () {
 		        elem.innerText = 'Копировать 📋';
@@ -459,13 +463,13 @@
 							"<td>" + (x + 1).toString() + "</td>" +
 							"<td>" + json[x].type + "</td>" +
 							"<td>" + json[x].name + "</td>" +
-							"<td style=\"" + (json[x].isDiscount ? "background-color: yellow;" : "") + "\">" + json[x].cosh + "</td>" +
-							"<td style=\"background-color: " + (size.color) + "\">" + size.size + "</td>" +
+							"<td style=\"" + (json[x].isDiscount ? ("background:" + layer_gradient("yellow"))  : "") + "\">" + translate_to_number(json[x].cosh) + "</td>" +
+							"<td style=\"background: " + layer_gradient(size.color) + "\">" + size.size + "</td>" +
 							"<td><button class=\"fbutton\" json_index='" + x + ":"+index+"' onclick=\"copyElem(this)\">Копировать 📋</button></td>" +
 						"</tr>";
 					}
 				} else {
-					table.innerHTML += "<tr style=\"background-color: yellow\">" +
+					table.innerHTML += "<tr style=\"background: "+layer_gradient("yellow")+";\">" +
 						"<td></td>" +
 						"<td></td>" +
 						"<td>Нет изменений</td>" +

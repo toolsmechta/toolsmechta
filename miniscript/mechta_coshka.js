@@ -10,7 +10,8 @@ function evaluate_number(e) {
 }
 
 function translate_to_number(number){
-    console.log("function not impl");
+    //console.log("function not impl");
+    return number; 
 }
 
 function get_radix_n(num, a){
