@@ -9,23 +9,40 @@ function evaluate_number(e) {
     return parseInt(l, 10)
 }
 
-function translate_to_number(number){
-    //console.log("function not impl");
-    return number; 
+function translate_to_number(num) {
+    const radix = 10;
+    let result = "";
+    let level = 1;
+
+    function div(x, y) {
+        return {
+            quot: Math.floor(x / y),
+            rem: Math.floor(x % y)
+        };
+    }
+    let dv = div(0,1);
+    while ((num = (dv = div(num, radix)).quot)) {
+        result = dv.rem + result;
+
+        if (level % 3 == 0)
+            result = " " + result;
+        ++level;
+    }
+    result = dv.rem + result;
+    return result;
 }
 
-function get_radix_n(num, a){
-    let x = Math.pow(10,a);
+function get_radix_n(num, a) {
+    let x = Math.pow(10, a);
 
     let p = Math.round(num / x);
     let q = num % x;
 
-    if(num < x / 10)
+    if (num < x / 10)
         q = 0;
 
     return q;
 }
-
 
 function stat(jsonResult) {
     /*
@@ -55,9 +72,8 @@ const sizes = [
     "70x42", "#55aaff",
     "105x75", "#ffc107",
     "A6", "#ff5100"];
-const types_unknown = "неизвестный";
+const types_unknown = "-";
 function indexof_size(type) {
-
 
     let sz;
     let cl;
@@ -65,14 +81,14 @@ function indexof_size(type) {
     let x;
     let y;
 
-    for (y = 0; y < types.length;) {
+    for (y = 0; y < types.length; ) {
 
         x = types[y].indexOf(type);
         if (x != ~0) {
-            y=types[y][x+1];
+            y = types[y][x + 1];
             break;
         }
-    ++y;
+        ++y;
     }
 
     if (x != ~0) {
