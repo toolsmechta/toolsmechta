@@ -29,7 +29,7 @@
 			height:332.16336949585195px;
 			border: 3px solid #d61167;
 			margin: auto;
-			background-image: url('./images.jfif')
+			background-image: url('./images.jpg')
 		}
 		.loader 
 		{
@@ -111,7 +111,6 @@
 		  background: #F79361;
 		  box-shadow: 2px 2px 0 0 #a22800;
 		  position: relative;
-		  width: 125px;
 		}
 		 .fbutton:hover {
 		  box-shadow: none;
@@ -155,9 +154,9 @@
 			background-color: #eee;
 		}
 		table {
-		  background: #f5ffff;
 		  border-collapse: collapse;
 		  text-align: left;
+		  width: 100%;
 		}
 		table th {
 		  border-top: 1px solid #777777;	
@@ -220,7 +219,7 @@
 			background-color: #eee;
 			color: #444;
 			cursor: pointer;
-			padding: 10px;
+			padding: 5px;
 			border: 1px solid black;
 			width: 100%;
 			text-align: left;
@@ -237,10 +236,10 @@
 		.content {
 	      margin-right: auto;
 		  margin-left: auto;
-		  padding: 0 18px;
 		  display: none;
 		  overflow: hidden;
 		  background-color: #f1f1f1;
+		  width: inherit;
 		}
 		
 		.collapsible:after {
@@ -254,20 +253,29 @@
 		.active:after {
 		  content: "\2796"; /* Unicode character for "minus" sign (-) */
 		}
+		
+		.cc {
+			text-align: center;
+			margin-left: auto;
+			margin-right: auto;
+			padding: 10px;
+			background-color: #f1f1f1;
+		}
 
 	</style>
 	<script>
 		const debug_mode = false;
 		const delayLoader = debug_mode ? 100 : 2000;
 		const first_window = "#window_logo";
+		const haveLoad = true;
 		let windows = [];
 		let _jsons = [null, null];
 		let jsonResult = null;
 		const Action = {
-		    ACT_DEF: 0,
-		    ACT_CLOSE_WINDOW: 1,
-		    ACT_SHOW_WINDOW: 2,
-		    ACT_AVAIL_SHOW: 3
+		    ACT_DEF: 0,			// default window show
+		    ACT_CLOSE_WINDOW: 1, // for unblink window (close) 
+		    ACT_SHOW_WINDOW: 2, // for blink window  (show) 
+		    ACT_AVAIL_SHOW: 3 // reserved
 		};
 		var loaded = false;
 		var docx = [null, null]; // prev and next
@@ -441,8 +449,7 @@
 
 		function avail_print(jsonResult) {
 			const changes_list_head = ["Измененные ценники", "Добавлены в магазин", "Удалены из магазина"];
-		    let lists = [$("#thead_change")[0],$("#thead_add")[0],$("#thead_remove")[0]];
-			let tables = [$("#list_body_chn")[0],$("#list_body_add")[0],$("#list_body_rem")[0]];
+		   
 			function update_list(list,table,json,index){
 				list.innerText = changes_list_head[index] + " (" + json.length + ")";
 				//Insert HEAD
@@ -479,9 +486,17 @@
 					"</tr>";
 				}
 			}
-		   
+			
+			let _cont = $("#list_body_chn")[0].parentElement.parentElement; 
+			_cont.innerHTML = "<div class=\"cc\">Это часть блока зарезервировано для использования в будущем! Будут добавлены новые функций!</div>" + _cont.innerHTML;
+		    
+			let lists = [$("#thead_change")[0],$("#thead_add")[0],$("#thead_remove")[0]];
+			let tables = [$("#list_body_chn")[0],$("#list_body_add")[0],$("#list_body_rem")[0]];
+			
 			update_list(lists[0],tables[0],jsonResult.changed,0);
 			lists[0].click();
+		
+			
 			update_list(lists[1],tables[1],jsonResult.addedNew,1);
 			update_list(lists[2],tables[2],jsonResult.prevRemoved,2);
 		}
@@ -496,14 +511,21 @@
 		            this.classList.toggle("active");
 		            var content = this.nextElementSibling;
 		            if (content.style.display === "block") {
-		                content.style.display = "none";
+		                $(content).hide({
+							duration: 500
+						});
+						//content.style.display = "none";
 		            } else {
-		                content.style.display = "block";
+						$(content).show({
+							duration: 500
+						})
+		                //content.style.display = "block";
 		            }
 		        });
 		    }
 
 		    // wait and show
+			if(haveLoad){
 		    setTimeout(function () {
 		        //return;
 		        show_loader("#window_data");
@@ -519,15 +541,16 @@
 
 		        docx[x] = file;
 		    });
+			}
 
 		    $('.input-file-text').text("Нажмите, чтобы выбрать");
 
 		    $('#do').on("click", function () {
-		        function _check() {
+		        function _validate() {
 		            return docx[0] != null && docx[1] != null;
 		        }
 
-		        if (!_check()) {
+		        if (!_validate()) {
 		            alert("Документы не выбраны. Пожалуйста выберите файлы.");
 		            return;
 		        }
@@ -549,14 +572,14 @@
 			<button class="fbutton" style="margin-left:auto" onclick="action(Action.ACT_CLOSE_WINDOW, this.parentElement)">x</button>
 			<span class="logo"></span>	
 			<p style="margin:auto; padding: 10px; text-align: center"></p>
-			<p style="background-color: yellow; margin:auto; padding: 10px; text-align: center">Мы сделаем все, что ты скажешь семпай! <br/>Пожалуйста не забывайте сохранять МБТ и КБТ!</p>
+			<p style="background-color: yellow; margin:auto; padding: 10px; text-align: center">Автоматизация ценников - версия 1.0 <br/>Пожалуйста не забывайте сохранять МБТ и КБТ! <br/>Наш девиз - Качество во всем!</p>
 		</div>
 		
 		<!--This is MAIN WINDOW -->
 		
 		<div id="window_loader" class="box"> 
 			<span class="loader"></span>
-			<p id="loaderText">Подождите...</p>		
+			<p id="loaderText">Подготавливаем ценники...</p>		
 		</div>
 		
 		<div id="window_data" class="box"> 			
@@ -564,17 +587,17 @@
 				<label>Первый список 📑</label>
 				<label class="input-file">
 					<span class="input-file-text" type="text"></span>
-					<input id="prev" accept=".html" type="file" name="file">     
+					<input id="prev" accept=".html" type="file" name="file1">     
 				</label>
 				<br/>
 				<label>Второй список 📑</label>
 				<label class="input-file">
 					<span class="input-file-text" type="text"></span>
-					<input id="next" accept=".html" type="file" name="file">        
+					<input id="next" accept=".html" type="file" name="file2">        
 				</label>
 				<br/>
 			</div>
-			<button class="fbutton" style="margin-left:auto" id="do" class="btn-gear">сформировать</button>
+			<button class="fbutton" style="margin-left:auto" id="do" class="btn-gear">↻ сформировать</button>
 			<a style="flex-wrap: wrap;" target="_blank" href="https://badcast.github.io">Как это работает?</a>
 		</div>
 		
