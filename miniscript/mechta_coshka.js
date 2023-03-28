@@ -105,10 +105,10 @@ const types = [
 ];
 const lwidth = 3;
 const sizes = [
-    "МБО",     "#4caf50",	"28x33",
-    "70x42",   "#55aaff",	"70x42",
-    "105x75",  "#ffc107",	"105x75",
-    "A6",      "#ff5100",	"148x105"];
+    "МБО", "#4caf50", "28x33",
+    "70x42", "#55aaff", "70x42",
+    "105x75", "#ffc107", "105x75",
+    "A6", "#ff5100", "148x105"];
 const types_unknown = "-";
 function indexof_size(type) {
     let sz;
@@ -117,7 +117,7 @@ function indexof_size(type) {
     let x;
     let y;
 
-    for (y = 0; y < types.length; ) {
+    for (y = 0; y < types.length;) {
 
         x = types[y].indexOf(type);
         if (x != ~0) {
@@ -145,34 +145,34 @@ function indexof_size(type) {
     };
 }
 function calcPaper(size, count, paper = {
-        width: 297,
-        height: 420,
-        offLeft: 4,
-        offRight: 96, // 96 min
-        offUp: 2,
-        offDown: 16+109,  // 109 min
-        iso: "mm"
-    }) {
-	let x = paper.width - paper.offLeft - paper.offRight; 
-	let y = paper.height - paper.offUp - paper.offDown; 
-	
-	size = size.replaceAll(" ", "").split("x");
-	for(let i = 0; i < size.length; ++i) 
-		size[i]=parseInt(size[i],10);
-	let padLeftToRight = Math.floor(x/size[0]);
-	let padUpToDown = Math.floor(y/size[1]);
-	
-	let paperRequire = 1; 
-	
-	return { 
-		papers: paperRequire
-	};
-	
+    width: 297,
+    height: 420,
+    offLeft: 4,
+    offRight: 96, // 96 min
+    offUp: 2,
+    offDown: 16 + 109,  // 109 min
+    iso: "mm"
+}) {
+    let x = paper.width - paper.offLeft - paper.offRight;
+    let y = paper.height - paper.offUp - paper.offDown;
+
+    size = size.replaceAll(" ", "").split("x");
+    for (let i = 0; i < size.length; ++i)
+        size[i] = parseInt(size[i], 10);
+    let padLeftToRight = Math.floor(x / size[0]);
+    let padUpToDown = Math.floor(y / size[1]);
+
+    let paperRequire = 1;
+
+    return {
+        papers: paperRequire
+    };
+
 }
 function find_class_heuristic(docObject = document) {
     let e,
-    l = [null, null],
-    t = docObject.head.innerHTML;
+        l = [null, null],
+        t = docObject.head.innerHTML;
     function n(e) {
         let l;
         e = (e = (e = (e = e.trimStart()).substr(0, e.indexOf("{"))).trimEnd()).split(" ");
@@ -216,14 +216,14 @@ function find_class_heuristic(docObject = document) {
 }
 function avail(e = !0, docObject = document) {
     let l,
-    t,
-    n = docObject.getElementsByClassName("R2C1"),
-    o = docObject.getElementsByClassName("R1C1"),
-    coshClass;
+        t,
+        n = docObject.getElementsByClassName("R2C1"),
+        o = docObject.getElementsByClassName("R1C1"),
+        coshClass;
     if (e) {
         let e = find_class_heuristic(docObject);
         l = e.discount_class,
-        t = e.count_class;
+            t = e.count_class;
         coshClass = e.cosh_class;
         console.log("discount class: " + l + ", count class: " + t + " cosh class: " + coshClass);
     } else {
@@ -238,31 +238,31 @@ function avail(e = !0, docObject = document) {
         let c = s[e].childNodes;
         for (let e = 0; e < c.length; ++e) {
             let s,
-            a = c[e],
-            i = -1;
+                a = c[e],
+                i = -1;
             ((s = a.className == l) || a.className == t) && (i = evaluate_number(a.lastChild.innerText), r.push({
-                    name: n[r.length].innerText,
-                    cosh: i,
-                    type: o[r.length].innerText,
-                    isDiscount: s
-                }))
+                name: n[r.length].innerText,
+                cosh: i,
+                type: o[r.length].innerText,
+                isDiscount: s
+            }))
         }
     }
     return r
 }
 function difference(e, l) {
     let t = [],
-    n = [],
-    s = [];
+        n = [],
+        s = [];
     for (let n = 0; n < e.length; ++n) {
         let o = !1,
-        r = !1;
+            r = !1;
         for (let s = 0; l.length > s; ++s) {
             let c = e[n].name === l[s].name && e[n].type === l[s].type;
             if (!o && c && (r = !0, e[n].cosh != l[s].cosh || e[n].isDiscount != l[s].isDiscount)) {
                 l[s].oldCosh = e[n].cosh;
                 t.push(l[s]),
-                o = !0;
+                    o = !0;
                 break
             }
         }
@@ -282,11 +282,11 @@ function difference(e, l) {
         changed: t,
         addedNew: n,
         prevRemoved: s
-    }; 
-	//calc stats
-	obj.stats = stat(obj);
-	
-	return obj; 
+    };
+    //calc stats
+    obj.stats = stat(obj);
+
+    return obj;
 }
 function budget(e) {
     let l = 0;
@@ -303,9 +303,9 @@ function print_coshes(e) {
 function print_types(e) {
     let l = [];
     e = e ?? avail(),
-    l.push(e[0].type);
+        l.push(e[0].type);
     for (let t = l.length; t < e.length; ++t)
         l[l.length - 1] != e[t].type && l.push(e[t].type);
     return console.log(l.toString().replaceAll(",", ";")),
-    l
+        l
 }
