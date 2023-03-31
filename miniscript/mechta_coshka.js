@@ -2,6 +2,12 @@
 //this JS script created to facilitate the process of checking price tags based on a storefront (mechta.kz)
 //github: github.com/badcast
 
+function div(x, y) {
+    return {
+        quot: Math.floor(x / y),
+        rem: Math.floor(x % y)
+    };
+}
 //Convert string to NUMBER (ignore any case)
 function evaluate_number(e) {
     let l = "";
@@ -9,19 +15,12 @@ function evaluate_number(e) {
         e[t] >= "0" && e[t] <= "9" && (l += e[t]);
     return parseInt(l, 10)
 }
-
 //Convert number 123456789 to beautiful 123 456 789
 function translate_to_number(num, _level = 3, space = " ") {
     const radix = 10;
     let result = "";
     let level = 1;
 
-    function div(x, y) {
-        return {
-            quot: Math.floor(x / y),
-            rem: Math.floor(x % y)
-        };
-    }
     let dv = div(0, 1);
     while ((num = (dv = div(num, radix)).quot)) {
         result = dv.rem + result;
@@ -33,7 +32,6 @@ function translate_to_number(num, _level = 3, space = " ") {
     result = dv.rem + result;
     return result;
 }
-
 function get_radix_n(num, a) {
     a = Math.pow(10, a);
 
@@ -45,7 +43,6 @@ function get_radix_n(num, a) {
 
     return q;
 }
-
 function stat(jsonResult) {
     /*
     JsonResult impl:
@@ -117,7 +114,7 @@ function indexof_size(type) {
     let x;
     let y;
 
-    for (y = 0; y < types.length;) {
+    for (y = 0; y < types.length; ) {
 
         x = types[y].indexOf(type);
         if (x != ~0) {
@@ -144,35 +141,41 @@ function indexof_size(type) {
         size_mm: sz_mm
     };
 }
-function calcPaper(size, count, paper = {
-    width: 297,
-    height: 420,
-    offLeft: 4,
-    offRight: 96, // 96 min
-    offUp: 2,
-    offDown: 16 + 109,  // 109 min
-    iso: "mm"
-}) {
-    let x = paper.width - paper.offLeft - paper.offRight;
-    let y = paper.height - paper.offUp - paper.offDown;
+function calcPaper(size, count = 1, paper = {
+        width: 297, // mm maximum
+        height: 420, // mm maximum
+        offLeft: 4, // offset left
+        offRight: 96, // 96mm minimum
+        offUp: 2, // offset up
+        offDown: 16 + 109, // 109mm minimum
+        valueInISO: "mm"
+    }) {
+    let spaceX = paper.width - paper.offLeft - paper.offRight;
+    let spaceY = paper.height - paper.offUp - paper.offDown;
 
     size = size.replaceAll(" ", "").split("x");
+    //convert string to int
     for (let i = 0; i < size.length; ++i)
-        size[i] = parseInt(size[i], 10);
-    let padLeftToRight = Math.floor(x / size[0]);
-    let padUpToDown = Math.floor(y / size[1]);
+        size[i] = parseInt(size[i], 10); // size Xmm * Ymm
+
+    let toRightMax = div(spaceX, size[0]);
+    let toDownMax = div(spaceY, size[1]);
 
     let paperRequire = 1;
-
+	
+	
     return {
-        papers: paperRequire
+        papers: paperRequire,
+        toRightMax: toRightMax.quot,
+        toDownMax: toDownMax.quot,
+        valueInISO: paper.valueInISO
     };
 
 }
 function find_class_heuristic(docObject = document) {
     let e,
-        l = [null, null],
-        t = docObject.head.innerHTML;
+    l = [null, null],
+    t = docObject.head.innerHTML;
     function n(e) {
         let l;
         e = (e = (e = (e = e.trimStart()).substr(0, e.indexOf("{"))).trimEnd()).split(" ");
@@ -216,14 +219,14 @@ function find_class_heuristic(docObject = document) {
 }
 function avail(e = !0, docObject = document) {
     let l,
-        t,
-        n = docObject.getElementsByClassName("R2C1"),
-        o = docObject.getElementsByClassName("R1C1"),
-        coshClass;
+    t,
+    n = docObject.getElementsByClassName("R2C1"),
+    o = docObject.getElementsByClassName("R1C1"),
+    coshClass;
     if (e) {
         let e = find_class_heuristic(docObject);
         l = e.discount_class,
-            t = e.count_class;
+        t = e.count_class;
         coshClass = e.cosh_class;
         console.log("discount class: " + l + ", count class: " + t + " cosh class: " + coshClass);
     } else {
@@ -238,31 +241,31 @@ function avail(e = !0, docObject = document) {
         let c = s[e].childNodes;
         for (let e = 0; e < c.length; ++e) {
             let s,
-                a = c[e],
-                i = -1;
+            a = c[e],
+            i = -1;
             ((s = a.className == l) || a.className == t) && (i = evaluate_number(a.lastChild.innerText), r.push({
-                name: n[r.length].innerText,
-                cosh: i,
-                type: o[r.length].innerText,
-                isDiscount: s
-            }))
+                    name: n[r.length].innerText,
+                    cosh: i,
+                    type: o[r.length].innerText,
+                    isDiscount: s
+                }))
         }
     }
     return r
 }
 function difference(e, l) {
     let t = [],
-        n = [],
-        s = [];
+    n = [],
+    s = [];
     for (let n = 0; n < e.length; ++n) {
         let o = !1,
-            r = !1;
+        r = !1;
         for (let s = 0; l.length > s; ++s) {
             let c = e[n].name === l[s].name && e[n].type === l[s].type;
             if (!o && c && (r = !0, e[n].cosh != l[s].cosh || e[n].isDiscount != l[s].isDiscount)) {
                 l[s].oldCosh = e[n].cosh;
                 t.push(l[s]),
-                    o = !0;
+                o = !0;
                 break
             }
         }
@@ -303,9 +306,9 @@ function print_coshes(e) {
 function print_types(e) {
     let l = [];
     e = e ?? avail(),
-        l.push(e[0].type);
+    l.push(e[0].type);
     for (let t = l.length; t < e.length; ++t)
         l[l.length - 1] != e[t].type && l.push(e[t].type);
     return console.log(l.toString().replaceAll(",", ";")),
-        l
+    l
 }
