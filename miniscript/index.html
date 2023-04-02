@@ -499,6 +499,20 @@
 			
 			update_list(lists[1],tables[1],jsonResult.addedNew,1);
 			update_list(lists[2],tables[2],jsonResult.prevRemoved,2);
+			
+			let docinfo = $("#format_doc_info");
+			
+			let b70x42 = 0;
+			for(let x = 0; x < jsonResult.changed; ++x){
+				let info = indexof_size(jsonResult.changed);
+				if(info.sz_mm == "70x42"){
+					b70x42++;
+				}
+			}
+			
+			
+			let cp = calcPaper("70x42",b70x42);
+			docinfo.html(docinfo.html().replace("#", cp.paper.name).replace("#", cp.target) + " = "  + cp.papers);
 		}
 
 		function _load() {
@@ -604,8 +618,14 @@
 		<div id="window_table" class="box">
 			<button type="button" id="thead_change" class="collapsible">Измененные ценники (0)</button>
 			<div class="content">
-				<div class="cc">Это часть блока зарезервировано для использования в будущем! Будут добавлены новые функций!
-							
+				<div class="cc">
+					<div style="float: left"> 
+						<span width=50 height=50 style="background-color: red"></span> 
+					</div> 
+					<div style="float: left"> 
+						<img src="doc-icon.png" width=50/>
+						<p id="format_doc_info">Требуется <a style="border-bottom: 1px dashed;">#</a> документов для размера <a style="border-bottom: 1px dashed;">#</a></p>
+					</div> 
 				</div>
 				<table class="table">
 					<tbody id="list_body_chn">
