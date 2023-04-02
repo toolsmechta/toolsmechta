@@ -67,8 +67,9 @@ function stat(jsonResult) {
         //formula: x * height + y;
         let x = benefits_section.slice(0, benefits_width).indexOf(coshRad);
         if (x == -1) {
-            return benefits_section[benefits_section.length - 1]; // get last element
+            x = benefits_section[benefits_section.length - 1]; // get last element
         }
+		return x;
 
     }
     if (jsonResult == null) {
@@ -141,33 +142,39 @@ function indexof_size(type) {
         size_mm: sz_mm
     };
 }
-function calcPaper(size, count = 1, paper = {
-        width: 297, // mm maximum
-        height: 420, // mm maximum
-        offLeft: 4, // offset left
-        offRight: 96, // 96mm minimum
-        offUp: 2, // offset up
-        offDown: 16 + 109, // 109mm minimum
-        valueInISO: "mm"
+function calcPaper(target, count = 1, paper = {
+        width: 210 , // mm maximum
+        height: 297, // mm maximum
+        offLeft: 52, // offset left
+        offRight: 18, // offset right 
+        offUp: 0, // offset up
+        offDown: 80, // offset down
+        valueInISO: "mm",
+		name: "A4"
     }) {
     let spaceX = paper.width - paper.offLeft - paper.offRight;
     let spaceY = paper.height - paper.offUp - paper.offDown;
 
-    size = size.replaceAll(" ", "").split("x");
+    let size = target.replaceAll(" ", "").split("x");	
     //convert string to int
     for (let i = 0; i < size.length; ++i)
         size[i] = parseInt(size[i], 10); // size Xmm * Ymm
 
-    let toRightMax = div(spaceX, size[0]);
-    let toDownMax = div(spaceY, size[1]);
-
-    let paperRequire = 1;
+	let _spaceBlock = {
+		h: div(spaceX, size[0]),
+		v: div(spaceY, size[1])
+	};
 	
+	_spaceBlock.h = _spaceBlock.h.quot + (_spaceBlock.h.rem > 0 ? 1 : 0);
+	_spaceBlock.v = _spaceBlock.v.quot + (_spaceBlock.v.rem > 0 ? 1 : 0);
+
 	
     return {
-        papers: paperRequire,
-        toRightMax: toRightMax.quot,
-        toDownMax: toDownMax.quot,
+        papers: Math.ceil(count / (_spaceBlock.h * _spaceBlock.v)),
+		paper: paper,
+		target: target,
+        toHzMax: _spaceBlock.h,
+        toVcMax:  _spaceBlock.v,
         valueInISO: paper.valueInISO
     };
 
