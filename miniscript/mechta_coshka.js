@@ -168,7 +168,7 @@ function calcPaper(target, count = 1, paper = {
 	_spaceBlock.h = _spaceBlock.h.quot + (_spaceBlock.h.rem > 0 ? 1 : 0);
 	_spaceBlock.v = _spaceBlock.v.quot + (_spaceBlock.v.rem > 0 ? 1 : 0);
 
-	
+	 
     return {
         papers: Math.ceil(count / (_spaceBlock.h * _spaceBlock.v)),
 		paper: paper,
