@@ -255,18 +255,34 @@
 		}
 		
 		.cc {
-			text-align: center;
-			margin-left: auto;
-			margin-right: auto;
-			padding: 10px;
 			background-color: #f1f1f1;
+		}
+		
+		.cc_corner {
+			padding: 10px;
+			display: flex;
+			flex-wrap: wrap;
+			flex-direction: column;
+			justify-content: flex-start;
+			align-content: center;
+			align-items: center;	
+		}
+		.cc_text {
+			display: flex;
+			flex-wrap: nowrap;
+			justify-content: center;
+			align-items: center;
+			flex-direction: row;
 		}
 		
 	</style>
 	<script>
 		const debug_mode = false;
-		const delayLoader = debug_mode ? 100 : 2000;
+		const mechta_version = "1.0.0";
+		const who_is = "computer0";
+		const delayLoader = debug_mode ? 100 : 1000;
 		const first_window = "#window_logo";
+		const localstorage_key = "badcast_for_cast";
 		const haveLoad = true;
 		let windows = [];
 		let _jsons = [null, null];
@@ -279,7 +295,57 @@
 		};
 		var loaded = false;
 		var docx = [null, null]; // prev and next
-
+		
+		var _watcher = {
+			ticket: { 
+				firstInit: 0,
+				lastAccess: 0,
+				lastSaved: 0,
+				saved: 0
+			}, 
+			sessions: [],
+			data:[]
+		};
+		
+		function save_watch(){
+			_watcher.ticket.lastSaved = Date.now();
+			_watcher.ticket.saved++;
+			localStorage.setItem(localstorage_key, JSON.stringify(_watcher));
+		}
+		
+		function init_watcher(){
+			if(localStorage.getItem(localstorage_key) == null){
+				_watcher.ticket.firstInit = Date.now();
+				console.log("init first log");
+			}
+			else{
+				_watcher = JSON.parse(localStorage[localstorage_key]);
+			}
+			_watcher.data.push({});
+			_watcher.sessions.push({date: Date.now(), version: mechta_version } );
+		}
+		
+		function add_watch(name, state, json){
+		
+			if(state == "prev"){
+				_watcher.data[_watcher.data.length-1].prev = {
+					 content: json, 
+					 filename: name, 
+					 state: state
+				};
+			}
+			else {
+				_watcher.data[_watcher.data.length-1].next = {
+					 content: json, 
+					 filename: name, 
+					 state: state
+				};
+			}
+			
+			_watcher.ticket.lastAccess = Date.now();
+			save_watch();
+		}
+			
 		function action(code, lhs, rhs) {
 		    switch (code) {
 		    case Action.ACT_DEF: // default alert
@@ -366,11 +432,14 @@
 		        let reader = new FileReader();
 		        let y = x;
 		        reader.addEventListener('load', (e) => {
-		            docx[y] = document.implementation.createHTMLDocument(x == 0 ? "prev" : "next");
+					let file = docx[y].name; 
+					let state = x == 0 ? "prev" : "next";
+		            docx[y] = document.implementation.createHTMLDocument(state);
 		            docx[y].querySelector("html").innerHTML = e.target.result;
 		            let json = avail(true, docx[y]);
 		            console.log(json);
 		            json_loaded(json, y);
+					add_watch(file,state,json);
 
 		        });
 		        reader.readAsText(docx[x]);
@@ -449,8 +518,9 @@
 
 		function avail_print(jsonResult) {
 			const changes_list_head = ["Измененные ценники", "Добавлены в магазин", "Удалены из магазина"];
-		   
+		    
 			function update_list(list,table,json,index){
+				let assoc_container = new Map();
 				list.innerText = changes_list_head[index] + " (" + json.length + ")";
 				//Insert HEAD
 				table.innerHTML = "<tr>" +
@@ -474,6 +544,13 @@
 							"<td style=\"background: " + layer_gradient(size.color) + "\">" + size.size + "</td>" +
 							"<td><button class=\"fbutton\" json_index='" + x + ":"+index+"' onclick=\"copyElem(this)\">Копировать 📋</button></td>" +
 						"</tr>";
+						if(assoc_container[size.size_mm]==undefined){
+							assoc_container[size.size_mm]=1;
+						}
+						else {
+							++assoc_container[size.size_mm]; // push 
+						}
+						
 					}
 				} else {
 					table.innerHTML += "<tr style=\"background: "+layer_gradient("yellow")+";\">" +
@@ -485,6 +562,7 @@
 						"<td></td>" +
 					"</tr>";
 				}
+				return assoc_container;
 			}
 			
 			//let _cont = $("#list_body_chn")[0].parentElement.parentElement; 
@@ -493,29 +571,27 @@
 			let lists = [$("#thead_change")[0],$("#thead_add")[0],$("#thead_remove")[0]];
 			let tables = [$("#list_body_chn")[0],$("#list_body_add")[0],$("#list_body_rem")[0]];
 			
-			update_list(lists[0],tables[0],jsonResult.changed,0);
+			let container = update_list(lists[0],tables[0],jsonResult.changed,0);
 			lists[0].click();
 		
-			
 			update_list(lists[1],tables[1],jsonResult.addedNew,1);
 			update_list(lists[2],tables[2],jsonResult.prevRemoved,2);
 			
-			let docinfo = $("#format_doc_info");
-			
-			let b70x42 = 0;
-			for(let x = 0; x < jsonResult.changed; ++x){
-				let info = indexof_size(jsonResult.changed);
-				if(info.sz_mm == "70x42"){
-					b70x42++;
-				}
+			let cc = $(".cc")[0]; 
+			let cc_corner_tag = cc.innerHTML;
+			//cc.innerHTML = "";
+			function logMapElements(value, key, map) {
+				//let cp = calcPaper(key,value);
+				//cc.innerHTML += cc_corner_tag.replace("{}", cp.papers).replace("{}",value);
+				console.warn(cp);
 			}
-			
-			
-			let cp = calcPaper("70x42",b70x42);
-			docinfo.html(docinfo.html().replace("#", cp.paper.name).replace("#", cp.target) + " = "  + cp.papers);
+			container.forEach(logMapElements);
+
+			console.log(container);
 		}
 
 		function _load() {
+			init_watcher();
 		    //collapse element
 		    let coll = document.getElementsByClassName("collapsible");
 		    let i;
@@ -619,12 +695,11 @@
 			<button type="button" id="thead_change" class="collapsible">Измененные ценники (0)</button>
 			<div class="content">
 				<div class="cc">
-					<div style="float: left"> 
-						<span width=50 height=50 style="background-color: red"></span> 
-					</div> 
-					<div style="float: left"> 
+					<div class="cc_corner"> 
 						<img src="doc-icon.png" width=50/>
-						<p id="format_doc_info">Требуется <a style="border-bottom: 1px dashed;">#</a> документов для размера <a style="border-bottom: 1px dashed;">#</a></p>
+						<span class="cc_text">
+							<a style="border-bottom: 1px dashed;">{}</a> листа для размера <a style="border-bottom: 1px dashed;">{}</a>
+						</span>
 					</div> 
 				</div>
 				<table class="table">
