@@ -255,8 +255,24 @@
 		}
 		
 		.cc {
-			padding: 10px;
 			background-color: #f1f1f1;
+		}
+		
+		.cc_corner {
+			padding: 10px;
+			display: flex;
+			flex-wrap: wrap;
+			flex-direction: column;
+			justify-content: flex-start;
+			align-content: center;
+			align-items: center;	
+		}
+		.cc_text {
+			display: flex;
+			flex-wrap: nowrap;
+			justify-content: center;
+			align-items: center;
+			flex-direction: row;
 		}
 		
 	</style>
@@ -307,11 +323,10 @@
 			}
 			_watcher.data.push({});
 			_watcher.sessions.push({date: Date.now(), version: mechta_version } );
-			
-			save_watch();
 		}
 		
 		function add_watch(name, state, json){
+		
 			if(state == "prev"){
 				_watcher.data[_watcher.data.length-1].prev = {
 					 content: json, 
@@ -330,7 +345,6 @@
 			_watcher.ticket.lastAccess = Date.now();
 			save_watch();
 		}
-	
 			
 		function action(code, lhs, rhs) {
 		    switch (code) {
@@ -425,7 +439,6 @@
 		            let json = avail(true, docx[y]);
 		            console.log(json);
 		            json_loaded(json, y);
-					console.log(docx[y]);
 					add_watch(file,state,json);
 
 		        });
@@ -561,20 +574,20 @@
 			let container = update_list(lists[0],tables[0],jsonResult.changed,0);
 			lists[0].click();
 		
-			
 			update_list(lists[1],tables[1],jsonResult.addedNew,1);
 			update_list(lists[2],tables[2],jsonResult.prevRemoved,2);
 			
-			let docinfo = $("#format_doc_info");
-			
-			let str="";
-			let pp=0;
-			container.forEach((value,key,map)=>{
-				let cp = calcPaper(key,value);
-				str += key + " = " + value + ", ";
-			});
-			console.log(container); 
-			docinfo.html(docinfo.html().replace("#", "A4").replace("#", str + " = "  + pp));
+			let cc = $(".cc")[0]; 
+			let cc_corner_tag = cc.innerHTML;
+			//cc.innerHTML = "";
+			function logMapElements(value, key, map) {
+				//let cp = calcPaper(key,value);
+				//cc.innerHTML += cc_corner_tag.replace("{}", cp.papers).replace("{}",value);
+				console.warn(cp);
+			}
+			container.forEach(logMapElements);
+
+			console.log(container);
 		}
 
 		function _load() {
@@ -682,12 +695,11 @@
 			<button type="button" id="thead_change" class="collapsible">Измененные ценники (0)</button>
 			<div class="content">
 				<div class="cc">
-					<div style="float: left"> 
-						<span width=50 height=50 style="background-color: red"></span> 
-					</div> 
-					<div style="float: left"> 
+					<div class="cc_corner"> 
 						<img src="doc-icon.png" width=50/>
-						<p id="format_doc_info">Требуется <a style="border-bottom: 1px dashed;">#</a> документов для размера <a style="border-bottom: 1px dashed;">#</a></p>
+						<span class="cc_text">
+							<a style="border-bottom: 1px dashed;">{}</a> листа для размера <a style="border-bottom: 1px dashed;">{}</a>
+						</span>
 					</div> 
 				</div>
 				<table class="table">
