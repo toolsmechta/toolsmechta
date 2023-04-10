@@ -411,48 +411,71 @@
 		    show_window(w, false);
 		}
 
-		function show_avail(content1doc, content2doc) {
-		    function json_loaded(json, index) {
-		        _jsons[index] = json;
-
-		        if (_jsons[0] != null && _jsons[1] != null) {
-		            //State is loaded
-		            jsonResult = difference(_jsons[0], _jsons[1]);
-		            console.log(jsonResult);
-					//UPDATE
-		            avail_print(jsonResult);
-		        }
-		    }
-
+		function show_avail() {
 		    jsonResult = null;
 		    _jsons[0] = null;
 		    _jsons[1] = null;
 
+		    _preserves = [null, null];
+
 		    for (let x = 0; x < 2; ++x) {
 		        let reader = new FileReader();
 		        let y = x;
+				let fail = null;
+				let backlog_msg = "";
 		        reader.addEventListener('load', (e) => {
-					let file = docx[y].name; 
-					let state = x == 0 ? "prev" : "next";
-		            docx[y] = document.implementation.createHTMLDocument(state);
-		            docx[y].querySelector("html").innerHTML = e.target.result;
-		            let json = avail(true, docx[y]);
+					if(fail){
+						
+						return;
+					}
+		            let file = docx[y].name;
+		            let state = x == 0 ? "prev" : "next";
+		            //Create a new HTML doc
+		            _preserves[y] = document.implementation.createHTMLDocument(state);
+		            //Load HTML doc to
+		            _preserves[y].querySelector("html").innerHTML = e.target.result;
+		            //MECHTA_COSHKA_PARSER:avail
+		            let json = avail(true, _preserves[y]);
 		            console.log(json);
-		            json_loaded(json, y);
-					add_watch(file,state,json);
+					
+					let cmpt0 = -1;
+					for(let a = 0; a < json.length; ++a){
+						let cmpt1 =  indexof_size(json[a].type).category; 
+						if(cmpt0 == -1){
+							cmpt0=cmpt1; // assign as default 
+						}
+						else if(cmpt0 != cmpt1) {
+							fail = {msg: "Вниамние найдено смешанный формат данных. Файл (" + (file) + ") не подлежит к проверке, так .\nОжидалось \""+
+							(categroy_array[cmpt0])+"\" но вышло \"" + (categroy_array[cmpt1]) + "\"."}; 
+							break;  
+						}
+					}
+					
+		            _jsons[y] = json;
+					
+					if(fail){
+						
+						return;
+					}
+		            if (_jsons[0] != null && _jsons[1] != null) {
+		                //State is loaded
 
+		                jsonResult = difference(_jsons[0], _jsons[1]);
+		                console.log(jsonResult);
+		                //UPDATE
+		                
+						show_loader("#window_logo");
+						let t = setTimeout(function () {
+							//awake async
+							show_window_only("#window_table");
+							//show_window_push("#window_data");
+							avail_print(jsonResult);
+						}, 2000);						
+		            }
+			        
 		        });
 		        reader.readAsText(docx[x]);
-				docx[x].innerText = "";
-		    } 
-
-		    show_loader("#window_logo");
-
-		    let t = setTimeout(function () {
-		        //awake async
-		        show_window_only("#window_table");
-		        //show_window_push("#window_data");
-		    }, 2000);
+		    }
 		}
 
 		function show_loader(postWindow, closePrevs = true) {
@@ -544,11 +567,12 @@
 							"<td style=\"background: " + layer_gradient(size.color) + "\">" + size.size + "</td>" +
 							"<td><button class=\"fbutton\" json_index='" + x + ":"+index+"' onclick=\"copyElem(this)\">Копировать 📋</button></td>" +
 						"</tr>";
-						if(assoc_container[size.size_mm]==undefined){
-							assoc_container[size.size_mm]=1;
+						if(assoc_container.get(size.size_mm)==undefined){
+							assoc_container.set(size.size_mm,1);
 						}
 						else {
-							++assoc_container[size.size_mm]; // push 
+							let val = assoc_container.get(size.size_mm);
+							assoc_container.set(size.size_mm, ++val);
 						}
 						
 					}
@@ -579,15 +603,15 @@
 			
 			let cc = $(".cc")[0]; 
 			let cc_corner_tag = cc.innerHTML;
+			let pages = 0; 
 			//cc.innerHTML = "";
 			function logMapElements(value, key, map) {
-				//let cp = calcPaper(key,value);
-				//cc.innerHTML += cc_corner_tag.replace("{}", cp.papers).replace("{}",value);
-				console.warn(cp);
+				let cp = calcPaper(key,value);
+				pages += cp.papers;
+				//console.warn(cp);
 			}
 			container.forEach(logMapElements);
-
-			console.log(container);
+			cc.innerHTML = cc_corner_tag.replace("{}",pages).replace("{}"," общее");
 		}
 
 		function _load() {
@@ -645,7 +669,7 @@
 		            return;
 		        }
 
-		        show_avail(docx[0], docx[1]);
+		        show_avail();
 		    });
 
 		    windows = $("div.box").get(); // get windows;
@@ -698,7 +722,7 @@
 					<div class="cc_corner"> 
 						<img src="doc-icon.png" width=50/>
 						<span class="cc_text">
-							<a style="border-bottom: 1px dashed;">{}</a> листа для размера <a style="border-bottom: 1px dashed;">{}</a>
+							<a style="border-bottom: 1px dashed;">{} </a>  листа для размера <a style="border-bottom: 1px dashed;"> {}</a>
 						</span>
 					</div> 
 				</div>
