@@ -210,8 +210,9 @@ function show_avail() {
             console.log(json);
 
             let f = 0;
+            let fail;
             while (f < fail_checker.length) {
-                if (fail = fail_checker[f](file, json)) {
+                if ((fail = fail_checker[f](file, json)) != null) {
                     alert(fail.msg);
                     if (fail.fatal)
                         return;
