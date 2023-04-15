@@ -21,6 +21,12 @@
 			margin: 0; 
 			margin-top: 50px;
 			/*background-color: #e61771*/
+			background: linear-gradient(
+			  90deg,
+			  rgba(131, 58, 180, 1) 0%,
+			  rgba(253, 29, 29, 0.6) 60%,
+			  rgba(252, 176, 69, 1) 100%
+			);
 		}
 		.logo{
 			background-size: cover;
@@ -260,19 +266,21 @@
 		
 		.cc_corner {
 			padding: 10px;
-			display: flex;
-			flex-wrap: wrap;
-			flex-direction: column;
-			justify-content: flex-start;
-			align-content: center;
-			align-items: center;	
+			display: table-cell;	
+			width: 100px;
+		}
+		.cc_image{
+			background-image: url("./source/size.png");
+			display: block;
+			width:100px;
+			height:100px;
 		}
 		.cc_text {
-			display: flex;
-			flex-wrap: nowrap;
-			justify-content: center;
-			align-items: center;
-			flex-direction: row;
+			display: block;
+		}
+		
+		.sz_main{
+				
 		}
 		
 	</style>
@@ -283,7 +291,7 @@
 			
 		<!--This is LOGO WINDOW -->
 		
-		<div id="window_logo" class="box">
+		<div style="display:none" id="window_logo" class="box">
 			<button class="fbutton" style="margin-left:auto" onclick="action(Action.ACT_CLOSE_WINDOW, this.parentElement)">x</button>
 			<span class="logo"></span>	
 			<p style="margin:auto; padding: 10px; text-align: center"></p>
@@ -292,12 +300,12 @@
 		
 		<!--This is MAIN WINDOW -->
 		
-		<div id="window_loader" class="box"> 
+		<div style="display:none" id="window_loader" class="box"> 
 			<span class="loader"></span>
 			<p id="loaderText">Подготавливаем ценники...</p>		
 		</div>
 		
-		<div id="window_data" class="box"> 			
+		<div style="display:none" id="window_data" class="box"> 			
 			<div style="width: inherit; display: grid"> 
 				<label>Первый список 📑</label>
 				<label class="input-file">
@@ -316,12 +324,37 @@
 			<a style="flex-wrap: wrap;" target="_blank" href="https://badcast.github.io">Как это работает?</a>
 		</div>
 		
-		<div id="window_table" class="box">
+		<div style="display:none" id="window_table" class="box">
 			<button type="button" id="thead_change" class="collapsible">Измененные ценники (0)</button>
 			<div class="content">
 				<div class="cc">
 					<div class="cc_corner"> 
-						<img src="source/doc-icon.png" width=50/>
+						<span style="background-size: 386px 548px;" class="cc_image"></span>
+						<span class="cc_text">
+						</span>
+												<table> 
+							<tr> 
+								{}
+							</tr>
+							<tr> 
+								{}
+							</tr>
+						</table>
+					</div> 
+					<div class="cc_corner"> 
+						<span class="cc_image"></span>
+						<span class="cc_text">
+							Потребуется {} листа для размеров {}.
+						</span>
+					</div> 
+					<div class="cc_corner"> 
+						<span class="cc_image"></span>
+						<span class="cc_text">
+							Потребуется {} листа для размеров {}.
+						</span>
+					</div> 
+					<div class="cc_corner"> 
+						<span class="cc_image"></span>
 						<span class="cc_text">
 							Потребуется {} листа для размеров {}.
 						</span>
