@@ -5,7 +5,7 @@ const debug_mode = false;
 const mechta_version = "1.0.0";
 const who_is = "computer0";
 const delayLoader = debug_mode ? 100 : 1000;
-const first_window = "#window_logo";
+const first_window = "#window_table";
 const localstorage_key = "badcast_for_cast";
 var windows = [];
 var _jsons = [null, null];
@@ -428,19 +428,22 @@ function _load() {
     $('.input-file-text').text("Нажмите, чтобы выбрать");
 
     $('#do').on("click", function () {
+		let _part = ["Первый", "Второй"];
         let fail_msg = null;
+		let _sparse =  " документ не выбран.";
+		//compare is a null
+		for(let x = 0; x < docx.length; ++x){
+			if(docx[x]==null){
+				fail_msg=_part[x]+_sparse;
+				break;
+			}
+		}    
 
-        //compare is a null
-        if (docx[0] == null) {
-            fail_msg = "Первый документ не выбран.";
-        } else if (docx[1] == null) {
-            fail_msg = "Второй документ не выбран.";
-        }
         //compare a identity
-        else if (docx[0].file == docx[1].file && docx[0].lastModified == docx[1].lastModified && docx[0].size == docx[1].size) {
-            fail_msg = "Оба файла выбраны одинаково.";
+        if (fail_msg == null && docx[0].file == docx[1].file && docx[0].lastModified == docx[1].lastModified && docx[0].size == docx[1].size) {
+            fail_msg = "Оба файла выбраны одинаково. Изменение не будет.";
         }
-
+		
         if (fail_msg) {
             alert(fail_msg);
             return;
