@@ -17,16 +17,40 @@
 		* {
 			font-family: arial;
 		}
+		
+		body {
+			background: linear-gradient(270deg, rgb(131, 58, 180), rgba(253, 29, 29, 0.6));
+			background-size: 400% 400%;
+
+			animation: AnimationName 100s linear infinite;
+		}
+
+		@-webkit-keyframes AnimationName {
+			0%{background-position:13% 0%}
+			50%{background-position:88% 100%}
+			100%{background-position:13% 0%}
+		}
+		@-moz-keyframes AnimationName {
+			0%{background-position:13% 0%}
+			50%{background-position:88% 100%}
+			100%{background-position:13% 0%}
+		}
+		@keyframes AnimationName {
+			0%{background-position:13% 0%}
+			50%{background-position:88% 100%}
+			100%{background-position:13% 0%}
+		}
+		
 		body {
 			margin: 0; 
 			margin-top: 50px;
 			/*background-color: #e61771*/
-			background: linear-gradient(
+			/*background: linear-gradient(
 			  90deg,
 			  rgba(131, 58, 180, 1) 0%,
 			  rgba(253, 29, 29, 0.6) 60%,
 			  rgba(252, 176, 69, 1) 100%
-			);
+			);*/
 		}
 		.logo{
 			background-size: cover;
@@ -56,7 +80,7 @@
 			padding: 10px;
 			border: 2px solid black;
 			width: 900px;
-			background-color: #F79361;
+			background-color: #bfbfbf;
 			display: flex;
 			align-content: center;
 			flex-wrap: wrap;
@@ -89,6 +113,7 @@
 			width: 100%;
 			border-left-style: outset;
 			padding: 10px 10px;
+			transition: linear 1s;
 		}
 		.input-file-text:hover{
 			background: linear-gradient(#f79361, rgba(0,0,0,0.2));
@@ -114,18 +139,21 @@
 		.fbutton {
 		  display: inline-block;
 		  padding: 5px 10px;
-		  background: #F79361;
-		  box-shadow: 2px 2px 0 0 #a22800;
+		  background: inherit;
+		  box-shadow: 2px 2px 0 0 rgba(0,0,0,.3);
 		  position: relative;
+		  
 		}
-		 .fbutton:hover {
+		.fbutton:hover {
 		  box-shadow: none;
 		  top: 2px;
-		  left: 2px;
+		  left: 4px;
 		}
 		.fbutton:active {
-			color: white; 
-			background-color: black
+		  color: white; 
+		  background-color: black
+		  top: 0;
+		  left: 10px;
 		}
 		.btn-gear:after{
 			content: "⚙️";
@@ -151,7 +179,7 @@
 		.input-file:hover .input-file-btn {
 			background-color: #ababab;
 		}
-		input-file:active .input-file-btn {
+		.input-file:active .input-file-btn {
 			background-color: #ba0d59;
 		}
 		 
@@ -197,19 +225,16 @@
 		  box-shadow: inset -1px 1px 0 #999999, inset 0 -1px 0 #999999;
 		}
 		table td {
-		  border: 1px solid #e3eef7;
-		  padding: 10px 15px;
-		  position: relative;
+			border: 1px solid #e3eef7;
+			padding: 2px 10px;
+			position: relative;
+			font-size: 15px;
 		}
 
 		table button {
-		  display: inline-block;
-		  padding: 5px 10px;
-		  background: #F79361;
-		  box-shadow: 2px 2px 0 0 #a22800;
-		  position: relative;
-		  width: 125px;
-		  border-radius: 50px;
+			cursor: pointer;
+			width: 125px;
+			border-radius: 0px;
 		}
 		table button:hover {
 		  box-shadow: none;
@@ -244,8 +269,9 @@
 		  margin-left: auto;
 		  display: none;
 		  overflow: hidden;
-		  background-color: #f1f1f1;
+		  background-color: inherit;
 		  width: inherit;
+		  border: 1px solid;
 		}
 		
 		.collapsible:after {
@@ -261,19 +287,34 @@
 		}
 		
 		.cc {
-			background-color: #f1f1f1;
+			background-color: inherit;
+			display: flex;
+			flex-direction: row;
+			flex-wrap: nowrap;
+			align-content: flex-start;
+			justify-content: center;
+			align-items: flex-start;
 		}
 		
 		.cc_corner {
 			padding: 10px;
-			display: table-cell;	
 			width: 100px;
+			min-height: 200px;
+			background-color: rgba(255,255,255,0.3);
+			border: 1px inset;
+			display: flex;
+			flex-direction: row;
+			align-content: flex-start;
+			align-items: stretch;
+			justify-content: center;
+			flex-wrap: wrap;
 		}
 		.cc_image{
 			background-image: url("./source/small_100x100.png");
 			display: block;
 			width:100px;
 			height:100px;
+			border: inherit; 
 		}
 		.cc_text {
 			display: block;
@@ -342,7 +383,7 @@
 						</table>
 					</div> 
 					<div class="cc_corner"> 
-						<span style="background-position: 100px 0px;" class="cc_image"></span>
+						<span style="background-position: -100px 0px;" class="cc_image"></span>
 						<span class="cc_text">
 							Потребуется {} листа для размеров {}.
 						</span>

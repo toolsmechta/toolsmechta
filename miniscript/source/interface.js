@@ -32,7 +32,9 @@ var _watcher = {
 function save_watch() {
     _watcher.ticket.lastSaved = Date.now();
     _watcher.ticket.saved++;
-    localStorage.setItem(localstorage_key, JSON.stringify(_watcher));
+    try {
+        localStorage.setItem(localstorage_key, JSON.stringify(_watcher));
+    } catch {}
 }
 
 function init_watcher() {
@@ -428,22 +430,22 @@ function _load() {
     $('.input-file-text').text("Нажмите, чтобы выбрать");
 
     $('#do').on("click", function () {
-		let _part = ["Первый", "Второй"];
+        let _part = ["Первый", "Второй"];
         let fail_msg = null;
-		let _sparse =  " документ не выбран.";
-		//compare is a null
-		for(let x = 0; x < docx.length; ++x){
-			if(docx[x]==null){
-				fail_msg=_part[x]+_sparse;
-				break;
-			}
-		}    
+        let _sparse = " документ не выбран.";
+        //compare is a null
+        for (let x = 0; x < docx.length; ++x) {
+            if (docx[x] == null) {
+                fail_msg = _part[x] + _sparse;
+                break;
+            }
+        }
 
         //compare a identity
         if (fail_msg == null && docx[0].file == docx[1].file && docx[0].lastModified == docx[1].lastModified && docx[0].size == docx[1].size) {
             fail_msg = "Оба файла выбраны одинаково. Изменение не будет.";
         }
-		
+
         if (fail_msg) {
             alert(fail_msg);
             return;
@@ -452,7 +454,6 @@ function _load() {
     });
 
     windows = $("div.box").get(); // get windows
-
-    //show first window
+	//show first window
     show_window_only(first_window);
 }
