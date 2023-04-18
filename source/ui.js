@@ -19,9 +19,9 @@ const __change_log =
 * Улучшена стабильность системы. 
 * Улучшена проверка коррекций ошибок. 
 + Добавлено усечение для наблюдателя.
+Приятной работы - Мечта мены! :)
 `;
 
-const __change_work = "Приятной работы - Мечта мены! :)";
 const Action = {
     ACT_DEF: 0, // default window show
     ACT_CLOSE_WINDOW: 1, // for unblink window (close)
@@ -282,35 +282,27 @@ function ui_layer_gradient_component(col) {
 }
 
 function ui_present_copy(elem) {
-    var textArea = document.createElement("textarea");
+    var _ecopy = document.createElement("textarea");
     //split by indexes
     let ifi = elem.getAttribute("json_index").split(":");
     let jsonElem = (ifi[1] == 0 ? jsonResult.changed : ifi[1] == 1 ? jsonResult.addedNew : jsonResult.prevRemoved)[ifi[0]];
-    textArea.style.position = 'fixed';
-    textArea.style.top = 0;
-    textArea.style.left = 0;
+    _ecopy.style.position = 'fixed';
 
-    // Ensure it has a small width and height. Setting to 1px / 1em
-    // doesn't work as this gives a negative w/h on some browsers.
-    textArea.style.width = '2em';
-    textArea.style.height = '2em';
-
-    // We don't need padding, reducing the size if it does flash render.
-    textArea.style.padding = 0;
+    _ecopy.style.padding = 0;
 
     // Clean up any borders.
-    textArea.style.border = 'none';
-    textArea.style.outline = 'none';
-    textArea.style.boxShadow = 'none';
+    _ecopy.style.border = 'none';
+    _ecopy.style.outline = 'none';
+    _ecopy.style.boxShadow = 'none';
 
     // Avoid flash of the white box if rendered for any reason.
-    textArea.style.background = 'transparent';
+    _ecopy.style.background = 'transparent';
 
-    textArea.value = jsonElem.name;
+    _ecopy.value = jsonElem.name;
 
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
+    document.body.appendChild(_ecopy);
+    _ecopy.focus();
+    _ecopy.select();
 
     try {
         var successful = document.execCommand('copy');
@@ -320,7 +312,7 @@ function ui_present_copy(elem) {
         console.log('Oops, unable to copy');
     }
 
-    document.body.removeChild(textArea);
+    document.body.removeChild(_ecopy);
     let node = $(elem.parentNode.parentNode);
     node.addClass("copyied");
     node.css("background", ui_layer_gradient_component(indexof_size(jsonElem.type).color));
@@ -407,7 +399,7 @@ function ui_print_result(jsonResult) {
 function ui_version_notify() {
     const ver_key = "_version";
     if (localStorage.getItem(ver_key) != mechta_version) {
-        alert(`Новая версия: ${mechta_version}\n ${__change_log}\n${__change_work}`);
+        alert(`Новая версия: ${mechta_version}\n${__change_log}`);
         localStorage.setItem(ver_key, mechta_version);
     }
 }
