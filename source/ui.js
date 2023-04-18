@@ -12,6 +12,16 @@ var _jsons = [null, null];
 var jsonResult = null;
 var loaded = false;
 var docx = [null, null]; // prev and next
+var params = null;
+const __change_log =
+    `
+* Обновлен дизайн. 
+* Улучшена стабильность системы. 
+* Улучшена проверка коррекций ошибок. 
++ Добавлено усечение для наблюдателя.
+`;
+
+const __change_work = "Приятной работы - Мечта мены! :)";
 const Action = {
     ACT_DEF: 0, // default window show
     ACT_CLOSE_WINDOW: 1, // for unblink window (close)
@@ -29,26 +39,36 @@ var _watcher = {
     data: []
 };
 
-function sv_save_watch() {
-    _watcher.ticket.lastSaved = Date.now();
-    _watcher.ticket.saved++;
-    try {
-        localStorage.setItem(localstorage_key, JSON.stringify(_watcher));
-    } catch { }
-}
-
-function sv_init_watcher() {
-    if (localStorage.getItem(localstorage_key) == null) {
+function sv_load_watch() {
+    if (localStorage.getItem(localstorage_key) == null && localStorage[localstorage_key] != "") {
         _watcher.ticket.firstInit = Date.now();
         console.log("init first log");
     } else {
         _watcher = JSON.parse(localStorage[localstorage_key]);
     }
+    _watcher.data = _watcher.data ?? [];
+    _watcher.sessions = _watcher.sessions ?? [];
     _watcher.data.push({});
     _watcher.sessions.push({
         date: Date.now(),
         version: mechta_version
     });
+}
+
+function sv_save_watch() {
+    function shrink(arr, min_n) {
+        return arr.splice(0, Math.max(0, arr.length - min_n));
+    }
+
+    _watcher.ticket.lastSaved = Date.now();
+    _watcher.ticket.saved++;
+    try {
+        console.log("shrinked data ", shrink(_watcher.data, 10));
+        console.log("shrinked sessions ", shrink(_watcher.sessions, 50));
+        localStorage.setItem(localstorage_key, JSON.stringify(_watcher));
+    } catch {
+        console.error("failed save to localStorage");
+    }
 }
 
 function sv_add_watch(name, state, json) {
@@ -384,24 +404,36 @@ function ui_print_result(jsonResult) {
     cc.innerHTML = cc_corner_tag.replace("{}", pages).replace("{}", " общее");
 }
 
+function ui_version_notify() {
+    const ver_key = "_version";
+    if (localStorage.getItem(ver_key) != mechta_version) {
+        alert(`Новая версия: ${mechta_version}\n ${__change_log}\n${__change_work}`);
+        localStorage.setItem(ver_key, mechta_version);
+    }
+}
+
 function user_interface_present() {
-    sv_init_watcher();
+    params = new URL(document.location).searchParams;
+
+    sv_load_watch();
+
+    ui_version_notify();
+
     //collapse element
     let coll = document.getElementsByClassName("collapsible");
     let i;
+    let _duration = {
+        duration: 150
+    };
     for (i = 0; i < coll.length; i++) {
         coll[i].addEventListener("click", function () {
             this.classList.toggle("active");
             let content = this.nextElementSibling;
             if (content.style.display === "block") {
-                $(content).hide({
-                    duration: 500
-                });
+                $(content).hide(_duration);
                 //content.style.display = "none";
             } else {
-                $(content).show({
-                    duration: 500
-                })
+                $(content).show(_duration);
                 //content.style.display = "block";
             }
         });
@@ -457,4 +489,4 @@ function user_interface_present() {
     ui_show_window_only(first_window);
 }
 
-$( document ).ready(user_interface_present);
+$(document).ready(user_interface_present);
