@@ -1,17 +1,29 @@
 //main content
 
+const version = "1.0.0";
 const haveLoad = true;
 const debug_mode = false;
-const mechta_version = "1.0.0";
-const who_is = "computer0";
 const delayLoader = debug_mode ? 100 : 1000;
-const first_window = "#window_table";
+const first_window = "#window_logo";
 const localstorage_key = "badcast_for_cast";
 var windows = [];
 var _jsons = [null, null];
 var jsonResult = null;
 var loaded = false;
 var docx = [null, null]; // prev and next
+var params = null;
+
+const __change_log =
+    `
+* Обновлен дизайн. 
+* Улучшена стабильность системы. 
+* Улучшена проверка коррекций ошибок. 
++ Удалена для GSM назойливое диалоговое окно!
++ Добавлено усечение для наблюдателя.
++ Добавлено уведомление, о том, что сегодня будут новые товары!
+Приятной работы - Мечта мены! :)
+`;
+
 const Action = {
     ACT_DEF: 0, // default window show
     ACT_CLOSE_WINDOW: 1, // for unblink window (close)
@@ -29,30 +41,39 @@ var _watcher = {
     data: []
 };
 
-function save_watch() {
-    _watcher.ticket.lastSaved = Date.now();
-    _watcher.ticket.saved++;
-    try {
-        localStorage.setItem(localstorage_key, JSON.stringify(_watcher));
-    } catch {}
-}
-
-function init_watcher() {
-    if (localStorage.getItem(localstorage_key) == null) {
+function sv_load_watch() {
+    if (localStorage.getItem(localstorage_key) == null && localStorage[localstorage_key] != "") {
         _watcher.ticket.firstInit = Date.now();
         console.log("init first log");
     } else {
         _watcher = JSON.parse(localStorage[localstorage_key]);
     }
+    _watcher.data = _watcher.data ?? [];
+    _watcher.sessions = _watcher.sessions ?? [];
     _watcher.data.push({});
     _watcher.sessions.push({
         date: Date.now(),
-        version: mechta_version
+        version: version
     });
 }
 
-function add_watch(name, state, json) {
+function sv_save_watch() {
+    function shrink(arr, min_n) {
+        return arr.splice(0, Math.max(0, arr.length - min_n));
+    }
 
+    _watcher.ticket.lastSaved = Date.now();
+    _watcher.ticket.saved++;
+    try {
+        console.log("shrinked data ", shrink(_watcher.data, 5));
+        console.log("shrinked sessions ", shrink(_watcher.sessions, 50));
+        localStorage.setItem(localstorage_key, JSON.stringify(_watcher));
+    } catch {
+        console.error("failed save to localStorage");
+    }
+}
+
+function sv_add_watch(name, state, json) {
     if (state == "prev") {
         _watcher.data[_watcher.data.length - 1].prev = {
             content: json,
@@ -70,22 +91,22 @@ function add_watch(name, state, json) {
     _watcher.ticket.lastAccess = Date.now();
 }
 
-function action(code, lhs, rhs) {
+function ui_action(code, lhs, rhs) {
     switch (code) {
-    case Action.ACT_DEF: // default alert
-        {
-            alert("ОПС!");
+        case Action.ACT_DEF: // default alert
+            {
+                alert("ОПС!");
 
-            break;
-        }
-    case Action.ACT_CLOSE_WINDOW: // close by window from lhs
-        {
-            $(lhs).hide({
-                duration: 500
-            });
-            break;
-        }
-    case Action.ACT_SHOW_WINDOW: {
+                break;
+            }
+        case Action.ACT_CLOSE_WINDOW: // close by window from lhs
+            {
+                $(lhs).hide({
+                    duration: 500
+                });
+                break;
+            }
+        case Action.ACT_SHOW_WINDOW: {
             $(lhs).show({
                 duration: 500
             });
@@ -97,14 +118,14 @@ function action(code, lhs, rhs) {
             parentNode.insertBefore($(lhs)[0], firstElem);
             break;
         }
-    case Action.ACT_AVAIL_SHOW: {
-            show_window_push();
+        case Action.ACT_AVAIL_SHOW: {
+            ui_show_window_push();
             break;
         }
     }
 }
 
-function show_window(w, single) {
+function ui_show_window(w, single) {
     function compare_id(lhs, jqElem) {
         return lhs == "#" + jqElem.id;
     }
@@ -117,7 +138,7 @@ function show_window(w, single) {
         let wx = $(windows[x]);
 
         if (compare(w, wx.get(0))) {
-            action(Action.ACT_SHOW_WINDOW, w);
+            ui_action(Action.ACT_SHOW_WINDOW, w);
             continue;
         }
 
@@ -127,24 +148,26 @@ function show_window(w, single) {
     }
 }
 
-function show_window_only(w) {
-    show_window(w, true);
+function ui_show_window_only(w) {
+    ui_show_window(w, true);
 }
 
-function show_window_push(w) {
-    show_window(w, false);
+function ui_show_window_push(w) {
+    ui_show_window(w, false);
 }
 
-function show_avail() {
+function ui_show_avail_window() {
     jsonResult = null;
     _jsons[0] = null;
     _jsons[1] = null;
+    //save link for docx[n]
     _mark = [null, null];
     _preserves = [null, null];
+    _fails = [null, null];
 
     let _doctype_info = [null, null];
     for (let x = 0; x < docx.length; ++x) {
-        let y = x;
+        let y = x; // y save as local x
         let reader = new FileReader();
 
         reader.onloadend = function (content) {
@@ -159,10 +182,11 @@ function show_avail() {
 
                     return null;
                 },
+                // check fail's
                 function (file, input) {
-                    // check fail's
+
                     let cmpt0 = indexof_size(input[0].type).category,
-                    cmpt1;
+                        cmpt1;
                     let haveUnknown = false;
                     for (let z = 1; z < input.length; ++z) {
                         cmpt1 = indexof_size(input[z].type).category;
@@ -171,19 +195,19 @@ function show_avail() {
                         else
                             if (cmpt0 != cmpt1) {
                                 return {
+                                    show: true,
                                     fatal: true,
                                     msg: "Внимание найден смешанный формат данных.\n\n\tФайл (" + (file) + ") не подлежит к проверке, так как в нем содержиться несколько направлений (КБТ,МБТ).\n\n\tОжидалось \"" +
-                                    (categories[cmpt0].full) + "\", но второй оказался \"" + (categories[cmpt1].full) + "\"."
+                                        (categories[cmpt0].full) + "\", но затем последовал \"" + (categories[cmpt1].full) + "\"."
                                 };
-                                break;
                             }
                     }
                     _mark[y] = {
                         category: cmpt0,
                         categoryName: categories[cmpt0]
                     }; // category
-
-                    return haveUnknown ? ({
+                    //ignore reach for GSM types (for skip)
+                    return haveUnknown && params.get("type") != "gsm" ? ({
                         fatal: false,
                         msg: "Обнаружены новые товары, они будут неизвестными до того момента, пока не будут зарегистрированы.\n\n\tМожно продолжать."
                     }) : null;
@@ -192,17 +216,17 @@ function show_avail() {
                     if (_mark[0] != null && _mark[1] != null && (_mark[0].category != _mark[1].category)) {
                         return {
                             fatal: true,
-                            msg: "Ошибка!!!\n\tОбнаружена разные виды ценников КБТ и МБТ.\n\tОжидалось \"" +
-                            (categories[_mark[0].category].short) + "\", но второе было \"" + (categories[_mark[1].category].short) + "\"\nПо этому проверка не возможна."
+                            msg: "Ошибка!!!\n\tОбнаружены разные виды ценников КБТ и МБТ.\n\tОжидалось \"" +
+                                (categories[_mark[0].category].short) + "\", но второе было \"" + (categories[_mark[1].category].short) + "\"\nПо этому проверка не возможна."
                         }
                     }
 
                     return null;
                 }
             ];
-
+            let index_neighbour = y == 0 ? 1 : 0;
             let file = docx[y].name;
-            let state = x == 0 ? "prev" : "next";
+            let state = y == 0 ? "prev" : "next";
             //Create a new HTML doc
             _preserves[y] = document.implementation.createHTMLDocument(state);
             //Load HTML doc to
@@ -214,8 +238,14 @@ function show_avail() {
             let f = 0;
             let fail;
             while (f < fail_checker.length) {
-                if ((fail = fail_checker[f](file, json)) != null) {
-                    alert(fail.msg);
+                if ((_fails[y] = fail = fail_checker[f](file, json)) != null) {
+                    if (_fails[index_neighbour] == null) {
+                        alert(fail.msg);
+
+                        if (fail.show === true && window.confirm("Показать проблему ценника?")) {
+                            window.open(URL.createObjectURL(docx[y]));
+                        }
+                    }
                     if (fail.fatal)
                         return;
                 }
@@ -225,24 +255,24 @@ function show_avail() {
             _jsons[y] = json;
 
             // add to watches
-            add_watch(file, state, json);
+            sv_add_watch(file, state, json);
 
             if (_jsons[0] != null && _jsons[1] != null) {
-                //State is loaded
 
+                //State is loaded
                 jsonResult = difference(_jsons[0], _jsons[1]);
                 console.log(jsonResult);
-                //UPDATE
 
+                //UPDATE
                 show_loader("#window_logo");
                 let t = setTimeout(function () {
                     //awake async
-                    show_window_only("#window_table");
+                    ui_show_window_only("#window_table");
                     //show_window_push("#window_data");
-                    avail_print(jsonResult);
-                }, 2000);
+                    ui_print_result(jsonResult);
+                }, delayLoader);
 
-                save_watch();
+                sv_save_watch();
             }
 
         }
@@ -252,46 +282,30 @@ function show_avail() {
 
 function show_loader(postWindow, closePrevs = true) {
     setTimeout(function () {
-        show_window(postWindow, closePrevs);
+        ui_show_window(postWindow, closePrevs);
     }, delayLoader); //wait 1s
 
-    show_window("#window_loader", closePrevs);
+    ui_show_window("#window_loader", closePrevs);
 }
 
-function layer_gradient(col) {
+function ui_layer_gradient_component(col) {
     return "linear-gradient(95deg, " + col + ",rgba(0,0,0,0.1))";
 }
 
-function copyElem(elem) {
-    var textArea = document.createElement("textarea");
+function ui_present_copy(elem) {
+    var _ecopy = document.createElement("textarea");
     //split by indexes
     let ifi = elem.getAttribute("json_index").split(":");
     let jsonElem = (ifi[1] == 0 ? jsonResult.changed : ifi[1] == 1 ? jsonResult.addedNew : jsonResult.prevRemoved)[ifi[0]];
-    textArea.style.position = 'fixed';
-    textArea.style.top = 0;
-    textArea.style.left = 0;
+    _ecopy.style.position = 'fixed';
 
-    // Ensure it has a small width and height. Setting to 1px / 1em
-    // doesn't work as this gives a negative w/h on some browsers.
-    textArea.style.width = '2em';
-    textArea.style.height = '2em';
+    _ecopy.style.background = 'transparent';
 
-    // We don't need padding, reducing the size if it does flash render.
-    textArea.style.padding = 0;
+    _ecopy.value = jsonElem.name;
 
-    // Clean up any borders.
-    textArea.style.border = 'none';
-    textArea.style.outline = 'none';
-    textArea.style.boxShadow = 'none';
-
-    // Avoid flash of the white box if rendered for any reason.
-    textArea.style.background = 'transparent';
-
-    textArea.value = jsonElem.name;
-
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
+    document.body.appendChild(_ecopy);
+    _ecopy.focus();
+    _ecopy.select();
 
     try {
         var successful = document.execCommand('copy');
@@ -301,17 +315,17 @@ function copyElem(elem) {
         console.log('Oops, unable to copy');
     }
 
-    document.body.removeChild(textArea);
+    document.body.removeChild(_ecopy);
     let node = $(elem.parentNode.parentNode);
     node.addClass("copyied");
-    node.css("background", layer_gradient(indexof_size(jsonElem.type).color));
+    node.css("background", ui_layer_gradient_component(indexof_size(jsonElem.type).color));
     elem.innerText = 'Скопировано ✓';
     setTimeout(function () {
         elem.innerText = 'Копировать 📋';
     }, 1000);
 }
 
-function avail_print(jsonResult) {
+function ui_print_result(jsonResult) {
     const changes_list_head = ["Измененные ценники", "Добавлены в магазин", "Удалены из магазина"];
 
     function update_list(list, table, json, index) {
@@ -332,13 +346,13 @@ function avail_print(jsonResult) {
             for (let x = 0; x < json.length; ++x) {
                 let size = indexof_size(json[x].type);
                 table.innerHTML += "<tr>" +
-                "<td>" + (x + 1).toString() + "</td>" +
-                "<td>" + json[x].type + "</td>" +
-                "<td>" + json[x].name + "</td>" +
-                "<td style=\"" + (json[x].isDiscount ? ("background:" + layer_gradient("yellow")) : "") + "\">" + translate_to_number(json[x].cosh) + "</td>" +
-                "<td style=\"background: " + layer_gradient(size.color) + "\">" + size.size + "</td>" +
-                "<td><button class=\"fbutton\" json_index='" + x + ":" + index + "' onclick=\"copyElem(this)\">Копировать 📋</button></td>" +
-                "</tr>";
+                    "<td>" + (x + 1).toString() + "</td>" +
+                    "<td>" + json[x].type + "</td>" +
+                    "<td>" + json[x].name + "</td>" +
+                    "<td style=\"" + (json[x].isDiscount ? ("background:" + ui_layer_gradient_component("yellow")) : "") + "\">" + translate_to_number(json[x].cosh) + "</td>" +
+                    "<td style=\"background: " + ui_layer_gradient_component(size.color) + "\">" + size.size + "</td>" +
+                    "<td><button class=\"fbutton\" json_index='" + x + ":" + index + "' onclick=\"ui_present_copy(this)\">Копировать 📋</button></td>" +
+                    "</tr>";
                 if (assoc_container.get(size.size_mm) == undefined) {
                     assoc_container.set(size.size_mm, 1);
                 } else {
@@ -348,14 +362,14 @@ function avail_print(jsonResult) {
 
             }
         } else {
-            table.innerHTML += "<tr style=\"background: " + layer_gradient("yellow") + ";\">" +
-            "<td></td>" +
-            "<td></td>" +
-            "<td>Нет изменений</td>" +
-            "<td></td>" +
-            "<td></td>" +
-            "<td></td>" +
-            "</tr>";
+            table.innerHTML += "<tr style=\"background: " + ui_layer_gradient_component("yellow") + ";\">" +
+                "<td></td>" +
+                "<td></td>" +
+                "<td>Нет изменений</td>" +
+                "<td></td>" +
+                "<td></td>" +
+                "<td></td>" +
+                "</tr>";
         }
         return assoc_container;
     }
@@ -382,31 +396,50 @@ function avail_print(jsonResult) {
         //console.warn(cp);
     }
     container.forEach(logMapElements);
-    cc.innerHTML = cc_corner_tag.replace("{}", pages).replace("{}", " общее");
+    //cc.innerHTML = cc_corner_tag.replace("{}", pages).replace("{}", " общее");
 }
 
-function _load() {
-    init_watcher();
+function ui_version_notify() {
+    const ver_key = "_version";
+    if (localStorage.getItem(ver_key) != version) {
+        alert(`Новая версия: ${version}\n${__change_log}`);
+        localStorage.setItem(ver_key, version);
+    }
+}
+
+function user_interface_present() {
+
+    //Params: 
+    // maybe_error - this is for stupied mode 
+    // name        - user name 
+    // target      - target for confirm  
+    // type        - user department
+    params = new URL(document.location).searchParams;
+
+    sv_load_watch();
+
+    ui_version_notify();
+
     //collapse element
     let coll = document.getElementsByClassName("collapsible");
     let i;
+    let _duration = {
+        duration: 150
+    };
     for (i = 0; i < coll.length; i++) {
         coll[i].addEventListener("click", function () {
             this.classList.toggle("active");
             let content = this.nextElementSibling;
             if (content.style.display === "block") {
-                $(content).hide({
-                    duration: 500
-                });
+                $(content).hide(_duration);
                 //content.style.display = "none";
             } else {
-                $(content).show({
-                    duration: 500
-                })
+                $(content).show(_duration);
                 //content.style.display = "block";
             }
         });
     }
+
 
     // wait and show
     if (haveLoad) {
@@ -450,10 +483,23 @@ function _load() {
             alert(fail_msg);
             return;
         };
-        show_avail();
+        ui_show_avail_window();
     });
 
     windows = $("div.box").get(); // get windows
-	//show first window
-    show_window_only(first_window);
+    //show first window
+    ui_show_window_only(first_window);
+
+    const __tmp_day = "__wtmp_day";
+    if (new Date().toDateString().startsWith("Fri")) {
+        if (sessionStorage.getItem(__tmp_day) == null) {
+            sessionStorage.setItem(__tmp_day, 1);
+            alert("Сегодня пятница, значит готовимся на прибытие новых товаров!\nНе забудьте сохранить ценники после прибытия, чтобы не потерять изменения!");
+        }
+    }
+    else {
+        sessionStorage.removeItem(__tmp_day);
+    }
 }
+
+$(document).ready(user_interface_present);
