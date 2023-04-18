@@ -1,11 +1,10 @@
 //main content
 
+const version = "1.0.0";
 const haveLoad = true;
 const debug_mode = false;
-const mechta_version = "1.0.0";
-const who_is = "computer0";
 const delayLoader = debug_mode ? 100 : 1000;
-const first_window = "#window_table";
+const first_window = "#window_logo";
 const localstorage_key = "badcast_for_cast";
 var windows = [];
 var _jsons = [null, null];
@@ -13,12 +12,15 @@ var jsonResult = null;
 var loaded = false;
 var docx = [null, null]; // prev and next
 var params = null;
+
 const __change_log =
     `
 * Обновлен дизайн. 
 * Улучшена стабильность системы. 
 * Улучшена проверка коррекций ошибок. 
++ Удалена для GSM назойливое диалоговое окно!
 + Добавлено усечение для наблюдателя.
++ Добавлено уведомление, о том, что сегодня будут новые товары!
 Приятной работы - Мечта мены! :)
 `;
 
@@ -51,7 +53,7 @@ function sv_load_watch() {
     _watcher.data.push({});
     _watcher.sessions.push({
         date: Date.now(),
-        version: mechta_version
+        version: version
     });
 }
 
@@ -63,7 +65,7 @@ function sv_save_watch() {
     _watcher.ticket.lastSaved = Date.now();
     _watcher.ticket.saved++;
     try {
-        console.log("shrinked data ", shrink(_watcher.data, 10));
+        console.log("shrinked data ", shrink(_watcher.data, 5));
         console.log("shrinked sessions ", shrink(_watcher.sessions, 50));
         localStorage.setItem(localstorage_key, JSON.stringify(_watcher));
     } catch {
@@ -158,12 +160,14 @@ function ui_show_avail_window() {
     jsonResult = null;
     _jsons[0] = null;
     _jsons[1] = null;
+    //save link for docx[n]
     _mark = [null, null];
     _preserves = [null, null];
+    _fails = [null, null];
 
     let _doctype_info = [null, null];
     for (let x = 0; x < docx.length; ++x) {
-        let y = x;
+        let y = x; // y save as local x
         let reader = new FileReader();
 
         reader.onloadend = function (content) {
@@ -178,8 +182,9 @@ function ui_show_avail_window() {
 
                     return null;
                 },
+                // check fail's
                 function (file, input) {
-                    // check fail's
+
                     let cmpt0 = indexof_size(input[0].type).category,
                         cmpt1;
                     let haveUnknown = false;
@@ -190,19 +195,19 @@ function ui_show_avail_window() {
                         else
                             if (cmpt0 != cmpt1) {
                                 return {
+                                    show: true,
                                     fatal: true,
                                     msg: "Внимание найден смешанный формат данных.\n\n\tФайл (" + (file) + ") не подлежит к проверке, так как в нем содержиться несколько направлений (КБТ,МБТ).\n\n\tОжидалось \"" +
-                                        (categories[cmpt0].full) + "\", но второй оказался \"" + (categories[cmpt1].full) + "\"."
+                                        (categories[cmpt0].full) + "\", но затем последовал \"" + (categories[cmpt1].full) + "\"."
                                 };
-                                break;
                             }
                     }
                     _mark[y] = {
                         category: cmpt0,
                         categoryName: categories[cmpt0]
                     }; // category
-
-                    return haveUnknown ? ({
+                    //ignore reach for GSM types (for skip)
+                    return haveUnknown && params.get("type") != "gsm" ? ({
                         fatal: false,
                         msg: "Обнаружены новые товары, они будут неизвестными до того момента, пока не будут зарегистрированы.\n\n\tМожно продолжать."
                     }) : null;
@@ -211,7 +216,7 @@ function ui_show_avail_window() {
                     if (_mark[0] != null && _mark[1] != null && (_mark[0].category != _mark[1].category)) {
                         return {
                             fatal: true,
-                            msg: "Ошибка!!!\n\tОбнаружена разные виды ценников КБТ и МБТ.\n\tОжидалось \"" +
+                            msg: "Ошибка!!!\n\tОбнаружены разные виды ценников КБТ и МБТ.\n\tОжидалось \"" +
                                 (categories[_mark[0].category].short) + "\", но второе было \"" + (categories[_mark[1].category].short) + "\"\nПо этому проверка не возможна."
                         }
                     }
@@ -219,9 +224,9 @@ function ui_show_avail_window() {
                     return null;
                 }
             ];
-
+            let index_neighbour = y == 0 ? 1 : 0;
             let file = docx[y].name;
-            let state = x == 0 ? "prev" : "next";
+            let state = y == 0 ? "prev" : "next";
             //Create a new HTML doc
             _preserves[y] = document.implementation.createHTMLDocument(state);
             //Load HTML doc to
@@ -233,8 +238,14 @@ function ui_show_avail_window() {
             let f = 0;
             let fail;
             while (f < fail_checker.length) {
-                if ((fail = fail_checker[f](file, json)) != null) {
-                    alert(fail.msg);
+                if ((_fails[y] = fail = fail_checker[f](file, json)) != null) {
+                    if (_fails[index_neighbour] == null) {
+                        alert(fail.msg);
+
+                        if (fail.show === true && window.confirm("Показать проблему ценника?")) {
+                            window.open(URL.createObjectURL(docx[y]));
+                        }
+                    }
                     if (fail.fatal)
                         return;
                 }
@@ -247,19 +258,19 @@ function ui_show_avail_window() {
             sv_add_watch(file, state, json);
 
             if (_jsons[0] != null && _jsons[1] != null) {
-                //State is loaded
 
+                //State is loaded
                 jsonResult = difference(_jsons[0], _jsons[1]);
                 console.log(jsonResult);
-                //UPDATE
 
+                //UPDATE
                 show_loader("#window_logo");
                 let t = setTimeout(function () {
                     //awake async
                     ui_show_window_only("#window_table");
                     //show_window_push("#window_data");
                     ui_print_result(jsonResult);
-                }, 2000);
+                }, delayLoader);
 
                 sv_save_watch();
             }
@@ -288,14 +299,6 @@ function ui_present_copy(elem) {
     let jsonElem = (ifi[1] == 0 ? jsonResult.changed : ifi[1] == 1 ? jsonResult.addedNew : jsonResult.prevRemoved)[ifi[0]];
     _ecopy.style.position = 'fixed';
 
-    _ecopy.style.padding = 0;
-
-    // Clean up any borders.
-    _ecopy.style.border = 'none';
-    _ecopy.style.outline = 'none';
-    _ecopy.style.boxShadow = 'none';
-
-    // Avoid flash of the white box if rendered for any reason.
     _ecopy.style.background = 'transparent';
 
     _ecopy.value = jsonElem.name;
@@ -393,18 +396,24 @@ function ui_print_result(jsonResult) {
         //console.warn(cp);
     }
     container.forEach(logMapElements);
-    cc.innerHTML = cc_corner_tag.replace("{}", pages).replace("{}", " общее");
+    //cc.innerHTML = cc_corner_tag.replace("{}", pages).replace("{}", " общее");
 }
 
 function ui_version_notify() {
     const ver_key = "_version";
-    if (localStorage.getItem(ver_key) != mechta_version) {
-        alert(`Новая версия: ${mechta_version}\n${__change_log}`);
-        localStorage.setItem(ver_key, mechta_version);
+    if (localStorage.getItem(ver_key) != version) {
+        alert(`Новая версия: ${version}\n${__change_log}`);
+        localStorage.setItem(ver_key, version);
     }
 }
 
 function user_interface_present() {
+
+    //Params: 
+    // maybe_error - this is for stupied mode 
+    // name        - user name 
+    // target      - target for confirm  
+    // type        - user department
     params = new URL(document.location).searchParams;
 
     sv_load_watch();
@@ -430,6 +439,7 @@ function user_interface_present() {
             }
         });
     }
+
 
     // wait and show
     if (haveLoad) {
@@ -479,6 +489,17 @@ function user_interface_present() {
     windows = $("div.box").get(); // get windows
     //show first window
     ui_show_window_only(first_window);
+
+    const __tmp_day = "__wtmp_day";
+    if (new Date().toDateString().startsWith("Fri")) {
+        if (sessionStorage.getItem(__tmp_day) == null) {
+            sessionStorage.setItem(__tmp_day, 1);
+            alert("Сегодня пятница, значит готовимся на прибытие новых товаров!\nНе забудьте сохранить ценники после прибытия, чтобы не потерять изменения!");
+        }
+    }
+    else {
+        sessionStorage.removeItem(__tmp_day);
+    }
 }
 
 $(document).ready(user_interface_present);
