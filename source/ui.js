@@ -29,15 +29,15 @@ var _watcher = {
     data: []
 };
 
-function save_watch() {
+function sv_save_watch() {
     _watcher.ticket.lastSaved = Date.now();
     _watcher.ticket.saved++;
     try {
         localStorage.setItem(localstorage_key, JSON.stringify(_watcher));
-    } catch {}
+    } catch { }
 }
 
-function init_watcher() {
+function sv_init_watcher() {
     if (localStorage.getItem(localstorage_key) == null) {
         _watcher.ticket.firstInit = Date.now();
         console.log("init first log");
@@ -51,8 +51,7 @@ function init_watcher() {
     });
 }
 
-function add_watch(name, state, json) {
-
+function sv_add_watch(name, state, json) {
     if (state == "prev") {
         _watcher.data[_watcher.data.length - 1].prev = {
             content: json,
@@ -70,22 +69,22 @@ function add_watch(name, state, json) {
     _watcher.ticket.lastAccess = Date.now();
 }
 
-function action(code, lhs, rhs) {
+function ui_action(code, lhs, rhs) {
     switch (code) {
-    case Action.ACT_DEF: // default alert
-        {
-            alert("ОПС!");
+        case Action.ACT_DEF: // default alert
+            {
+                alert("ОПС!");
 
-            break;
-        }
-    case Action.ACT_CLOSE_WINDOW: // close by window from lhs
-        {
-            $(lhs).hide({
-                duration: 500
-            });
-            break;
-        }
-    case Action.ACT_SHOW_WINDOW: {
+                break;
+            }
+        case Action.ACT_CLOSE_WINDOW: // close by window from lhs
+            {
+                $(lhs).hide({
+                    duration: 500
+                });
+                break;
+            }
+        case Action.ACT_SHOW_WINDOW: {
             $(lhs).show({
                 duration: 500
             });
@@ -97,14 +96,14 @@ function action(code, lhs, rhs) {
             parentNode.insertBefore($(lhs)[0], firstElem);
             break;
         }
-    case Action.ACT_AVAIL_SHOW: {
-            show_window_push();
+        case Action.ACT_AVAIL_SHOW: {
+            ui_show_window_push();
             break;
         }
     }
 }
 
-function show_window(w, single) {
+function ui_show_window(w, single) {
     function compare_id(lhs, jqElem) {
         return lhs == "#" + jqElem.id;
     }
@@ -117,7 +116,7 @@ function show_window(w, single) {
         let wx = $(windows[x]);
 
         if (compare(w, wx.get(0))) {
-            action(Action.ACT_SHOW_WINDOW, w);
+            ui_action(Action.ACT_SHOW_WINDOW, w);
             continue;
         }
 
@@ -127,15 +126,15 @@ function show_window(w, single) {
     }
 }
 
-function show_window_only(w) {
-    show_window(w, true);
+function ui_show_window_only(w) {
+    ui_show_window(w, true);
 }
 
-function show_window_push(w) {
-    show_window(w, false);
+function ui_show_window_push(w) {
+    ui_show_window(w, false);
 }
 
-function show_avail() {
+function ui_show_avail_window() {
     jsonResult = null;
     _jsons[0] = null;
     _jsons[1] = null;
@@ -162,7 +161,7 @@ function show_avail() {
                 function (file, input) {
                     // check fail's
                     let cmpt0 = indexof_size(input[0].type).category,
-                    cmpt1;
+                        cmpt1;
                     let haveUnknown = false;
                     for (let z = 1; z < input.length; ++z) {
                         cmpt1 = indexof_size(input[z].type).category;
@@ -173,7 +172,7 @@ function show_avail() {
                                 return {
                                     fatal: true,
                                     msg: "Внимание найден смешанный формат данных.\n\n\tФайл (" + (file) + ") не подлежит к проверке, так как в нем содержиться несколько направлений (КБТ,МБТ).\n\n\tОжидалось \"" +
-                                    (categories[cmpt0].full) + "\", но второй оказался \"" + (categories[cmpt1].full) + "\"."
+                                        (categories[cmpt0].full) + "\", но второй оказался \"" + (categories[cmpt1].full) + "\"."
                                 };
                                 break;
                             }
@@ -193,7 +192,7 @@ function show_avail() {
                         return {
                             fatal: true,
                             msg: "Ошибка!!!\n\tОбнаружена разные виды ценников КБТ и МБТ.\n\tОжидалось \"" +
-                            (categories[_mark[0].category].short) + "\", но второе было \"" + (categories[_mark[1].category].short) + "\"\nПо этому проверка не возможна."
+                                (categories[_mark[0].category].short) + "\", но второе было \"" + (categories[_mark[1].category].short) + "\"\nПо этому проверка не возможна."
                         }
                     }
 
@@ -225,7 +224,7 @@ function show_avail() {
             _jsons[y] = json;
 
             // add to watches
-            add_watch(file, state, json);
+            sv_add_watch(file, state, json);
 
             if (_jsons[0] != null && _jsons[1] != null) {
                 //State is loaded
@@ -237,12 +236,12 @@ function show_avail() {
                 show_loader("#window_logo");
                 let t = setTimeout(function () {
                     //awake async
-                    show_window_only("#window_table");
+                    ui_show_window_only("#window_table");
                     //show_window_push("#window_data");
-                    avail_print(jsonResult);
+                    ui_print_result(jsonResult);
                 }, 2000);
 
-                save_watch();
+                sv_save_watch();
             }
 
         }
@@ -252,17 +251,17 @@ function show_avail() {
 
 function show_loader(postWindow, closePrevs = true) {
     setTimeout(function () {
-        show_window(postWindow, closePrevs);
+        ui_show_window(postWindow, closePrevs);
     }, delayLoader); //wait 1s
 
-    show_window("#window_loader", closePrevs);
+    ui_show_window("#window_loader", closePrevs);
 }
 
-function layer_gradient(col) {
+function ui_layer_gradient_component(col) {
     return "linear-gradient(95deg, " + col + ",rgba(0,0,0,0.1))";
 }
 
-function copyElem(elem) {
+function ui_present_copy(elem) {
     var textArea = document.createElement("textarea");
     //split by indexes
     let ifi = elem.getAttribute("json_index").split(":");
@@ -304,14 +303,14 @@ function copyElem(elem) {
     document.body.removeChild(textArea);
     let node = $(elem.parentNode.parentNode);
     node.addClass("copyied");
-    node.css("background", layer_gradient(indexof_size(jsonElem.type).color));
+    node.css("background", ui_layer_gradient_component(indexof_size(jsonElem.type).color));
     elem.innerText = 'Скопировано ✓';
     setTimeout(function () {
         elem.innerText = 'Копировать 📋';
     }, 1000);
 }
 
-function avail_print(jsonResult) {
+function ui_print_result(jsonResult) {
     const changes_list_head = ["Измененные ценники", "Добавлены в магазин", "Удалены из магазина"];
 
     function update_list(list, table, json, index) {
@@ -332,13 +331,13 @@ function avail_print(jsonResult) {
             for (let x = 0; x < json.length; ++x) {
                 let size = indexof_size(json[x].type);
                 table.innerHTML += "<tr>" +
-                "<td>" + (x + 1).toString() + "</td>" +
-                "<td>" + json[x].type + "</td>" +
-                "<td>" + json[x].name + "</td>" +
-                "<td style=\"" + (json[x].isDiscount ? ("background:" + layer_gradient("yellow")) : "") + "\">" + translate_to_number(json[x].cosh) + "</td>" +
-                "<td style=\"background: " + layer_gradient(size.color) + "\">" + size.size + "</td>" +
-                "<td><button class=\"fbutton\" json_index='" + x + ":" + index + "' onclick=\"copyElem(this)\">Копировать 📋</button></td>" +
-                "</tr>";
+                    "<td>" + (x + 1).toString() + "</td>" +
+                    "<td>" + json[x].type + "</td>" +
+                    "<td>" + json[x].name + "</td>" +
+                    "<td style=\"" + (json[x].isDiscount ? ("background:" + ui_layer_gradient_component("yellow")) : "") + "\">" + translate_to_number(json[x].cosh) + "</td>" +
+                    "<td style=\"background: " + ui_layer_gradient_component(size.color) + "\">" + size.size + "</td>" +
+                    "<td><button class=\"fbutton\" json_index='" + x + ":" + index + "' onclick=\"ui_present_copy(this)\">Копировать 📋</button></td>" +
+                    "</tr>";
                 if (assoc_container.get(size.size_mm) == undefined) {
                     assoc_container.set(size.size_mm, 1);
                 } else {
@@ -348,14 +347,14 @@ function avail_print(jsonResult) {
 
             }
         } else {
-            table.innerHTML += "<tr style=\"background: " + layer_gradient("yellow") + ";\">" +
-            "<td></td>" +
-            "<td></td>" +
-            "<td>Нет изменений</td>" +
-            "<td></td>" +
-            "<td></td>" +
-            "<td></td>" +
-            "</tr>";
+            table.innerHTML += "<tr style=\"background: " + ui_layer_gradient_component("yellow") + ";\">" +
+                "<td></td>" +
+                "<td></td>" +
+                "<td>Нет изменений</td>" +
+                "<td></td>" +
+                "<td></td>" +
+                "<td></td>" +
+                "</tr>";
         }
         return assoc_container;
     }
@@ -385,8 +384,8 @@ function avail_print(jsonResult) {
     cc.innerHTML = cc_corner_tag.replace("{}", pages).replace("{}", " общее");
 }
 
-function _load() {
-    init_watcher();
+function user_interface_present() {
+    sv_init_watcher();
     //collapse element
     let coll = document.getElementsByClassName("collapsible");
     let i;
@@ -450,10 +449,12 @@ function _load() {
             alert(fail_msg);
             return;
         };
-        show_avail();
+        ui_show_avail_window();
     });
 
     windows = $("div.box").get(); // get windows
-	//show first window
-    show_window_only(first_window);
+    //show first window
+    ui_show_window_only(first_window);
 }
+
+$( document ).ready(user_interface_present);
