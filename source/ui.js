@@ -1,6 +1,6 @@
 //main content
 
-const version = "1.0.0";
+const version = "1.0.1";
 const haveLoad = true;
 const debug_mode = false;
 const delayLoader = debug_mode ? 100 : 1000;
@@ -15,12 +15,10 @@ var params = null;
 
 const __change_log =
     `
+* Исправлен BUG! При невозможности реагировании на действий
 * Обновлен дизайн. 
 * Улучшена стабильность системы. 
-* Улучшена проверка коррекций ошибок. 
-+ Удалена для GSM назойливое диалоговое окно!
-+ Добавлено усечение для наблюдателя.
-+ Добавлено уведомление, о том, что сегодня будут новые товары!
++ Вычисление размера ценника.
 Приятной работы - Мечта мены! :)
 `;
 
@@ -227,12 +225,19 @@ function ui_show_avail_window() {
             let index_neighbour = y == 0 ? 1 : 0;
             let file = docx[y].name;
             let state = y == 0 ? "prev" : "next";
+            let json;
             //Create a new HTML doc
             _preserves[y] = document.implementation.createHTMLDocument(state);
             //Load HTML doc to
             _preserves[y].querySelector("html").innerHTML = content.target.result;
             //MECHTA_COSHKA_PARSER:avail
-            let json = avail(true, _preserves[y]);
+            try {
+                json = avail(true, _preserves[y]);
+            } catch (e) {
+                console.err(ex.message);
+                alert("Системная ошибка модуля \"мечты-кошки\"\nПодробнее: " + ex.message);
+                return;
+            }
             console.log(json);
 
             let f = 0;
@@ -386,17 +391,25 @@ function ui_print_result(jsonResult) {
     update_list(lists[1], tables[1], jsonResult.addedNew, 1);
     update_list(lists[2], tables[2], jsonResult.prevRemoved, 2);
 
-    let cc = $(".cc")[0];
-    let cc_corner_tag = cc.innerHTML;
-    let pages = 0;
-    //cc.innerHTML = "";
-    function logMapElements(value, key, map) {
+    let corners = $(".cc_corner");
+    let totalPages = 0;
+    let cmptN = new Array(corners.length);
+
+    container.forEach(function (value, key, map) {
+        let index = get_cc_from(key);
         let cp = calcPaper(key, value);
-        pages += cp.papers;
-        //console.warn(cp);
+        let pstr = $(corners[index]).html();
+        $(corners[index]).html(pstr.replace("{}", cp.papers).replace("{}", value));
+        if (cmptN[index] == null) cmptN[index] = 1;
+        totalPages += cp.papers;
+    });
+
+    //hide empty
+    for (let x = 0; x < cmptN.length; ++x) {
+        if (cmptN[x] == null) {
+            $(corners[x]).hide();
+        }
     }
-    container.forEach(logMapElements);
-    //cc.innerHTML = cc_corner_tag.replace("{}", pages).replace("{}", " общее");
 }
 
 function ui_version_notify() {
@@ -441,26 +454,29 @@ function user_interface_present() {
     }
 
 
+    $('.input-file input[type=file]').on('change', function () {
+        let file = this.files[0];
+        let x;
+        $(this).closest('.input-file').find('.input-file-text').text(file.name);
+        if (this.id == "prev")
+            x = 0;
+        else
+            x = 1;
+
+        docx[x] = file;
+    });
+
+
     // wait and show
     if (haveLoad) {
         setTimeout(function () {
             //return;
             show_loader("#window_data");
         }, delayLoader);
-        $('.input-file input[type=file]').on('change', function () {
-            let file = this.files[0];
-            let x;
-            $(this).closest('.input-file').find('.input-file-text').html(file.name);
-            if (this.id == "prev")
-                x = 0;
-            else
-                x = 1;
-
-            docx[x] = file;
-        });
     }
 
-    $('.input-file-text').text("Нажмите, чтобы выбрать");
+    $('.input-file-text').first().text("Выберите предыдущий МБО");
+    $('.input-file-text').last().text("Выберите следующий МБО");
 
     $('#do').on("click", function () {
         let _part = ["Первый", "Второй"];
