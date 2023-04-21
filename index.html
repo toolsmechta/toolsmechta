@@ -19,8 +19,8 @@
 			onclick="action(Action.ACT_CLOSE_WINDOW, this.parentElement)">x</button>
 		<span class="logo"></span>
 		<p style="margin:auto; padding: 10px; text-align: center"></p>
-		<p style="background-color: yellow; margin:auto; padding: 10px; text-align: center">Автоматизация ценников -
-			версия 1.0 <br />Пожалуйста не забывайте сохранять МБТ и КБТ! <br />Наш девиз - Качество во всем!</p>
+		<p style="background-color: yellow; margin:auto; padding: 10px; text-align: center">Цель мечты-кошки освободить
+			от рутины!</p>
 	</div>
 
 	<!--This is MAIN WINDOW -->
@@ -31,21 +31,21 @@
 	</div>
 
 	<div style="display:none" id="window_data" class="box">
-		<div style="width: inherit; display: grid">
-			<label>Первый список 📑</label>
-			<label class="input-file">
-				<span class="input-file-text" type="text"></span>
+		<div style="width: inherit; display: flex; justify-content: center;">
+			<label class="input-file fbutton">
+				<span class="input-file-icon"></span>
+				<span class="input-file-btn"><span class="input-file-text" type="text">SELECT MBO</span></span>
 				<input id="prev" accept=".html" type="file" name="file1">
 			</label>
-			<br />
-			<label>Второй список 📑</label>
-			<label class="input-file">
-				<span class="input-file-text" type="text"></span>
+			<label class="input-file fbutton">
+				<span class="input-file-icon"></span>
+				<span class="input-file-btn"><span class="input-file-text" type="text">SELECT MBO</span></span>
 				<input id="next" accept=".html" type="file" name="file2">
 			</label>
 			<br />
 		</div>
-		<button class="fbutton" style="margin-left:auto" id="do" class="btn-gear">↻ сформировать</button>
+		<button class="fbutton" style="margin-top: 20px; margin-left: auto; margin-right: auto;" id="do">↻
+			сформировать</button>
 		<a style="flex-wrap: wrap;" target="_blank" href="https://badcast.github.io">Как это работает?</a>
 	</div>
 
@@ -57,6 +57,7 @@
 				<div class="cc_corner">
 					<span style="background-position: 0 0;" class="cc_image"></span>
 					<span class="cc_text">
+						<a>A6</a>
 						<a>{} листа</a>
 						<a>{} шт</a>
 					</span>
@@ -65,6 +66,7 @@
 				<div class="cc_corner">
 					<span style="background-position: -100px 0px;" class="cc_image"></span>
 					<span class="cc_text">
+						<a>105x75</a>
 						<a>{} листа</a>
 						<a>{} шт</a>
 					</span>
@@ -73,6 +75,7 @@
 				<div class="cc_corner">
 					<span style="background-position: 200px 0px;" class="cc_image"></span>
 					<span class="cc_text">
+						<a>70x42</a>
 						<a>{} листа</a>
 						<a>{} шт</a>
 					</span>
@@ -81,6 +84,7 @@
 				<div class="cc_corner">
 					<span style="background-position: 100px 0px;" class="cc_image"></span>
 					<span class="cc_text">
+						<a>МБО</a>
 						<a>{} листа</a>
 						<a>{} шт</a>
 					</span>
