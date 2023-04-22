@@ -1,24 +1,26 @@
 //main content
 
-const version = "1.0.1";
+const version = "1.0.2";
 const haveLoad = true;
 const debug_mode = false;
 const delayLoader = debug_mode ? 100 : 1000;
 const first_window = "#window_logo";
 const localstorage_key = "badcast_for_cast";
-var windows = [];
-var _jsons = [null, null];
-var jsonResult = null;
 var loaded = false;
-var docx = [null, null]; // prev and next
+var jsonResult = null;
 var params = null;
+var docx = [null, null]; // prev and next
+var _jsons = [null, null];
+var windows = [];
 
 const __change_log =
     `
-* Исправлен BUG! При невозможности реагировании на действий
-* Обновлен дизайн. 
++ Добавлено: Проверка на правильный ввод имен МБО. 
+    Защита от ошибок ввода даты и время!
+    ***(Функция выполняется через name_analyze())*** 
+* Обновлен дизайн
 * Улучшена стабильность системы. 
-+ Вычисление размера ценника.
+* Удачное исправление некторых ошибок и багов.
 Приятной работы - Мечта мены! :)
 `;
 
@@ -174,6 +176,7 @@ function ui_show_avail_window() {
                     if (input.length == 0) {
                         return {
                             fatal: true,
+                            show: true,
                             msg: "Извините. Но файл оказался пустым: \"" + (file) + "\""
                         };
                     }
@@ -235,7 +238,7 @@ function ui_show_avail_window() {
                 json = avail(true, _preserves[y]);
             } catch (e) {
                 console.err(ex.message);
-                alert("Системная ошибка модуля \"мечты-кошки\"\nПодробнее: " + ex.message);
+                alert("Системная ошибка модуля \"мечты-кошки\"\nПодробнее:\n\t" + ex.message);
                 return;
             }
             console.log(json);
@@ -453,17 +456,45 @@ function user_interface_present() {
         });
     }
 
+    const _textMBO = ["Выберите предыдущий МБО", "Выберите следующий МБО"];
+    let __files = $('.input-file input[type=file]');
+    __files.on('change', function () {
+        let file = this.files[0],
+            x, filename = file.name,
+            permission = true;
 
-    $('.input-file input[type=file]').on('change', function () {
-        let file = this.files[0];
+        if (params.get("maybe_error") == "true") {
+            x = name_analyze(filename);
+            if (!(permission = x.error == 0)) {
+                filename = "Неверный имя МБО.";
+                let target = params.get("target");
+                alert("Вы " + (target != null ? "\""+target+"\" " : "") + "ввели некорректное название для МБО.\n"+
+                "Пример правильности имени: \n\tGSM-10.10.2023-10.22.\n\tKBT-10.10.2023-10.22.\n\tMBT-10.10.2023-10.22.\n\n"+
+                "Правила:\n[ОТДЕЛЕНИЕ]-[ДЕНЬ].[МЕСЯЦ].[ГОД]-[ЧАСЫ].[МИНУТЫ].\n\n"+
+                "Сообщение ошибки: " + x.error_message + 
+                "\nКод ошибки: " + x.error);
+            }
+        }
+
+        $(this).closest('.input-file').find('.input-file-text').text(filename);
+        if (permission) {
+            if (this.id == "prev")
+                x = 0;
+            else
+                x = 1;
+            docx[x] = file;
+        }
+    });
+
+    __files.on("click", function () {
         let x;
-        $(this).closest('.input-file').find('.input-file-text').text(file.name);
+        this.value = null;
         if (this.id == "prev")
             x = 0;
         else
             x = 1;
-
-        docx[x] = file;
+        docx[x] = null; // clean 
+        $('.input-file-text')[x].innerText = _textMBO[x];
     });
 
 
@@ -475,8 +506,8 @@ function user_interface_present() {
         }, delayLoader);
     }
 
-    $('.input-file-text').first().text("Выберите предыдущий МБО");
-    $('.input-file-text').last().text("Выберите следующий МБО");
+    $('.input-file-text').first().text(_textMBO[0]);
+    $('.input-file-text').last().text(_textMBO[1]);
 
     $('#do').on("click", function () {
         let _part = ["Первый", "Второй"];

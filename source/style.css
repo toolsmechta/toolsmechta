@@ -144,6 +144,30 @@ body {
 	transition: all 0.8s
 }
 
+.fbutton:active:after {
+	padding: 0;
+	margin: 0;
+	opacity: 1;
+	transition: 0s
+}
+
+.cc_corner:after {
+	content: "";
+	background: #f1f1f1;
+	position: absolute;
+	padding-top: 200px;
+	padding-left: 200px;
+	opacity: 0;
+	transition: all 0.8s
+}
+
+.cc_corner:active:after {
+	padding: 0;
+	margin: 0;
+	opacity: 1;
+	transition: 0s
+}
+
 .fbutton:hover {
 	box-shadow: none;
 }
@@ -151,13 +175,6 @@ body {
 .fbutton:active {
 	color: white;
 	background-color: black;
-}
-
-.fbutton:active:after {
-	padding: 0;
-	margin: 0;
-	opacity: 1;
-	transition: 0s
 }
 
 .input-file input[type=file] {
