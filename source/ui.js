@@ -1,24 +1,21 @@
 //main content
 
-const version = "1.0.1";
+const version = "1.0.3";
 const haveLoad = true;
 const debug_mode = false;
 const delayLoader = debug_mode ? 100 : 1000;
 const first_window = "#window_logo";
 const localstorage_key = "badcast_for_cast";
-var windows = [];
-var _jsons = [null, null];
-var jsonResult = null;
 var loaded = false;
-var docx = [null, null]; // prev and next
+var jsonResult = null;
 var params = null;
+var docx = [null, null]; // prev and next
+var _jsons = [null, null];
+var windows = [];
 
 const __change_log =
     `
-* Исправлен BUG! При невозможности реагировании на действий
-* Обновлен дизайн. 
-* Улучшена стабильность системы. 
-+ Вычисление размера ценника.
+* Обновлен дизайн
 Приятной работы - Мечта мены! :)
 `;
 
@@ -174,6 +171,7 @@ function ui_show_avail_window() {
                     if (input.length == 0) {
                         return {
                             fatal: true,
+                            show: true,
                             msg: "Извините. Но файл оказался пустым: \"" + (file) + "\""
                         };
                     }
@@ -235,7 +233,7 @@ function ui_show_avail_window() {
                 json = avail(true, _preserves[y]);
             } catch (e) {
                 console.err(ex.message);
-                alert("Системная ошибка модуля \"мечты-кошки\"\nПодробнее: " + ex.message);
+                alert("Системная ошибка модуля \"мечты-кошки\"\nПодробнее:\n\t" + ex.message);
                 return;
             }
             console.log(json);
@@ -302,12 +300,10 @@ function ui_present_copy(elem) {
     //split by indexes
     let ifi = elem.getAttribute("json_index").split(":");
     let jsonElem = (ifi[1] == 0 ? jsonResult.changed : ifi[1] == 1 ? jsonResult.addedNew : jsonResult.prevRemoved)[ifi[0]];
+
     _ecopy.style.position = 'fixed';
-
     _ecopy.style.background = 'transparent';
-
     _ecopy.value = jsonElem.name;
-
     document.body.appendChild(_ecopy);
     _ecopy.focus();
     _ecopy.select();
@@ -324,63 +320,65 @@ function ui_present_copy(elem) {
     let node = $(elem.parentNode.parentNode);
     node.addClass("copyied");
     node.css("background", ui_layer_gradient_component(indexof_size(jsonElem.type).color));
-    elem.innerText = 'Скопировано ✓';
+    elem.innerText = 'Скопировано';
     setTimeout(function () {
-        elem.innerText = 'Копировать 📋';
+        elem.innerText = 'Копировать';
     }, 1000);
 }
 
 function ui_print_result(jsonResult) {
     const changes_list_head = ["Измененные ценники", "Добавлены в магазин", "Удалены из магазина"];
-
+    const _str_no_change = "Нет изменений";
     function update_list(list, table, json, index) {
         let assoc_container = new Map();
-        list.innerText = changes_list_head[index] + " (" + json.length + ")";
+        list.innerHTML = `${changes_list_head[index]} (<a style="border-bottom: 1px dotted">${json.length}</a>)`;
         //Insert HEAD
-        table.innerHTML = "<tr>" +
-            "<th>№</th>" +
-            "<th>Тип</th>" +
-            "<th>Наименование</th>" +
-            "<th width=70>Цена</th>" +
-            "<th>Размер</th>" +
-            "<th>Действие</th>" +
-            "</tr>";
+        table.innerHTML = `<tr>
+            <th>№</th>
+            <th>Тип</th>
+            <th>Наименование</th>
+            <th width=70>Цена</th>
+            <th>Размер</th>
+            <th>Действие</th>
+        </tr>`;
 
         //Insert Rows
         if (json.length > 0) {
             for (let x = 0; x < json.length; ++x) {
-                let size = indexof_size(json[x].type);
-                table.innerHTML += "<tr>" +
-                    "<td>" + (x + 1).toString() + "</td>" +
-                    "<td>" + json[x].type + "</td>" +
-                    "<td>" + json[x].name + "</td>" +
-                    "<td style=\"" + (json[x].isDiscount ? ("background:" + ui_layer_gradient_component("yellow")) : "") + "\">" + translate_to_number(json[x].cosh) + "</td>" +
-                    "<td style=\"background: " + ui_layer_gradient_component(size.color) + "\">" + size.size + "</td>" +
-                    "<td><button class=\"fbutton\" json_index='" + x + ":" + index + "' onclick=\"ui_present_copy(this)\">Копировать 📋</button></td>" +
-                    "</tr>";
-                if (assoc_container.get(size.size_mm) == undefined) {
-                    assoc_container.set(size.size_mm, 1);
+                let size_info = indexof_size(json[x].type);
+                table.innerHTML += `<tr>
+                    <td>${(x + 1).toString()}</td>
+                    <td>${json[x].type}</td>
+                    <td>${json[x].name}</td>
+                    <td style="${(json[x].isDiscount ? ("background:" + ui_layer_gradient_component("yellow")) : "")}">${translate_to_number(json[x].cosh)}</td>
+                    <td style="background: ${ui_layer_gradient_component(size_info.color)}">${size_info.size}</td>
+                    <td>
+                        <button class="cbutton cbutton_icon_clipboard" json_index="${x}:${index}" onclick="ui_present_copy(this)">Копировать</button>
+                    </td>
+                </tr>`;
+                if (assoc_container.get(size_info.size_mm) == undefined) {
+                    assoc_container.set(size_info.size_mm, 1);
                 } else {
-                    let val = assoc_container.get(size.size_mm);
-                    assoc_container.set(size.size_mm, ++val);
+                    let val = assoc_container.get(size_info.size_mm);
+                    assoc_container.set(size_info.size_mm, ++val);
                 }
 
             }
         } else {
-            table.innerHTML += "<tr style=\"background: " + ui_layer_gradient_component("yellow") + ";\">" +
-                "<td></td>" +
-                "<td></td>" +
-                "<td>Нет изменений</td>" +
-                "<td></td>" +
-                "<td></td>" +
-                "<td></td>" +
-                "</tr>";
+            table.innerHTML += `<tr style="background: ${ui_layer_gradient_component("yellow")}">
+                <td></td>
+                <td></td>
+                <td>${_str_no_change}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                </tr>`;
         }
         return assoc_container;
     }
 
     //let _cont = $("#list_body_chn")[0].parentElement.parentElement;
-    //_cont.innerHTML = "" + _cont.innerHTML;
+    //_cont.innerHTML = " _cont.innerHTML;
 
     let lists = [$("#thead_change")[0], $("#thead_add")[0], $("#thead_remove")[0]];
     let tables = [$("#list_body_chn")[0], $("#list_body_add")[0], $("#list_body_rem")[0]];
@@ -398,8 +396,7 @@ function ui_print_result(jsonResult) {
     container.forEach(function (value, key, map) {
         let index = get_cc_from(key);
         let cp = calcPaper(key, value);
-        let pstr = $(corners[index]).html();
-        $(corners[index]).html(pstr.replace("{}", cp.papers).replace("{}", value));
+        $(corners[index]).html($(corners[index]).html().replace("{}", cp.papers).replace("{}", value));
         if (cmptN[index] == null) cmptN[index] = 1;
         totalPages += cp.papers;
     });
@@ -453,17 +450,45 @@ function user_interface_present() {
         });
     }
 
+    const _textMBO = ["Выберите предыдущий МБО", "Выберите следующий МБО"];
+    let __files = $('.input-file input[type=file]');
+    __files.on('change', function () {
+        let file = this.files[0],
+            x, filename = file.name,
+            permission = true;
 
-    $('.input-file input[type=file]').on('change', function () {
-        let file = this.files[0];
+        if (params.get("maybe_error") == "true") {
+            x = name_analyze(filename);
+            if (!(permission = x.error == 0)) {
+                let target = params.get("target");
+                filename = "Неверный имя МБО.";
+                alert("Вы " + (target != null ? "\"" + target + "\" " : "") + "ввели некорректное название для МБО.\n" +
+                    "Пример правильности имени: \n\tGSM-10.10.2023-10.22.\n\tKBT-10.10.2023-10.22.\n\tMBT-10.10.2023-10.22.\n\n" +
+                    "Правила:\n[ОТДЕЛЕНИЕ]-[ДЕНЬ].[МЕСЯЦ].[ГОД]-[ЧАСЫ].[МИНУТЫ].\n\n" +
+                    "Сообщение ошибки: " + x.error_message +
+                    "\nКод ошибки: " + x.error);
+            }
+        }
+
+        $(this).closest('.input-file').find('.input-file-text').text(filename);
+        if (permission) {
+            if (this.id == "prev")
+                x = 0;
+            else
+                x = 1;
+            docx[x] = file;
+        }
+    });
+
+    __files.on("click", function () {
         let x;
-        $(this).closest('.input-file').find('.input-file-text').text(file.name);
+        this.value = null;
         if (this.id == "prev")
             x = 0;
         else
             x = 1;
-
-        docx[x] = file;
+        docx[x] = null; // clean 
+        $('.input-file-text')[x].innerText = _textMBO[x];
     });
 
 
@@ -475,8 +500,8 @@ function user_interface_present() {
         }, delayLoader);
     }
 
-    $('.input-file-text').first().text("Выберите предыдущий МБО");
-    $('.input-file-text').last().text("Выберите следующий МБО");
+    $('.input-file-text').first().text(_textMBO[0]);
+    $('.input-file-text').last().text(_textMBO[1]);
 
     $('#do').on("click", function () {
         let _part = ["Первый", "Второй"];

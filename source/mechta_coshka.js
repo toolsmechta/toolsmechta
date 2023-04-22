@@ -34,10 +34,10 @@ const types_unknown = "-";
 
 function get_cc_from(size) {
     switch (size) {
-        case "A6": return 0;
+        case "148x105": return 0;
         case "105x75": return 1;
         case "70x42": return 2;
-        case "МБО": return 3;
+        case "28x33": return 3;
     }
     return unknown_category;
 }
@@ -88,6 +88,108 @@ function get_radix_n(num, a) {
 
     return q;
 }
+
+//print MBT-DD.MM.YYYY{-,.}HH.MM.html
+function name_analyze(target) {
+    const _types = ["kbt", "mbt", "sop", "gsm"];
+    const _format = ".html";
+    const ERR_MSG = ["", "Неизвестный тип отдела", "Некорректно определена дата", "Некорректно определена время", "Некорректно определена формат файла", "Поврежденный формат"];
+    const ERR = {
+        ER_OFF: 0,
+        ER_TYPE_INVALID: 1,
+        ER_DATE_INVALID: 2,
+        ER_TIME_INVALID: 3,
+        ER_EXT_INVALID: 4,
+        ER_TRY: 5
+    };
+    const _validChars = ['-', '.', ' '];
+    const _date_uniform = [31, 12, 9999, 23, 59];
+    var _dates = [],
+        x, y, z, w,
+        err = ERR.ER_OFF;
+
+    function valid_char(lhs) { let x; for (x = 0; _validChars[x] != lhs && x < _validChars.length; ++x); return x < _validChars.length; }
+
+    const __tests = [
+        //1 test format
+        function () {
+            return target.endsWith(_format) ? ERR.ER_OFF : ERR.ER_EXT_INVALID;
+        },
+        //2 test type
+        function () {
+            //1. get type from VALUE
+            for (w = 0, z = null; w < _types.length; ++w) {
+                if (_types[w][0] == target[0]) {
+                    z = w;
+                    break;
+                }
+            }
+            if (z == null) {
+                return ERR.ER_TYPE_INVALID;
+            }
+            for (x = 0, y = Math.min(_types[0].length, target.length); x < y; ++x) {
+                if (target[x] != _types[z][x]) {
+                    return ERR.ER_TYPE_INVALID;
+                }
+            }
+            if (target[x] == _validChars[0])
+                ++x;
+            else
+                return ERR.ER_DATE_INVALID;
+            return ERR.ER_OFF;
+        },
+        //3 test date
+        function () {
+            let time_flag = false;
+            for (y = x, w = 0; y < target.length; ++y) {
+                if (target[y] == _validChars[1] || !time_flag && valid_char(target[y]) && (time_flag = true)) {
+                    let conv = parseInt(target.substr(x, y - x), 10);
+                    if (isNaN(conv) || conv > _date_uniform[_dates.length]) {
+                        return time_flag ? ERR.ER_TIME_INVALID : ERR.ER_DATE_INVALID;
+                    }
+                    x = ++y;
+                    _dates.push(conv);
+                }
+            }
+            return (_dates.length != _date_uniform.length ? ERR.ER_DATE_INVALID : ERR.ER_OFF);
+        }
+    ];
+
+    //convert data to lower case
+    target = target.toLowerCase();
+
+    let _t = 0;
+    // do test's
+    do {
+        try {
+            err = __tests[_t](); // run test
+        }
+        catch {
+            err = ERR.ER_TRY;
+        }
+    } while (!err && ++_t < __tests.length);
+
+    //3. combine
+    let date = null;
+    let err_msg = ERR_MSG[err];
+
+    if (err == ERR.ER_OFF) {
+        //build date
+        date = new Date(_dates[2], _dates[1], _dates[0], _dates[3], _dates[4]);
+    }
+
+    return {
+        target: target,
+        type: z,
+        type_name: _types[z],
+        error_message: err_msg,
+        error: err,
+        converts: _dates,
+        date: date
+    };
+}
+
+
 function stat(jsonResult) {
     /*
     JsonResult impl:
@@ -210,8 +312,8 @@ function calcPaper(target, count = 1, paper = {
     //convert string to int
     for (let i = 0; i < size.length; ++i)
         size[i] = parseInt(size[i], 10);
-    // size Xmm * Ymm
 
+    // size Xmm * Ymm
     let _spaceBlock = {
         h: div(spaceX, size[0]),
         v: div(spaceY, size[1])
@@ -281,32 +383,32 @@ function find_class_heuristic(docObject = document) {
 function avail(e = !0, docObject = document) {
     let l, _compare = [null, null],
         t,
-        n = docObject.getElementsByClassName("R2C1"),
-        o = docObject.getElementsByClassName("R1C1"),
+        naming_list = docObject.getElementsByClassName("R2C1"),
+        typing_list = docObject.getElementsByClassName("R1C1"),
         coshClass;
     if (e) {
         let e = find_class_heuristic(docObject);
-        _compare[0] = e.discount_class,
-            _compare[1] = e.count_class;
+        _compare[0] = e.discount_class;
+        _compare[1] = e.count_class;
         coshClass = e.cosh_class;
-        console.log("discount class: " + l + ", count class: " + t + " cosh class: " + coshClass);
+        console.log("discount class: " + _compare[0] + ", count class: " + _compare[1] + " cosh class: " + coshClass);
     } else {
         console.error("failing find classes. Break point");
         return null;
     }
 
-    s = docObject.getElementsByClassName(coshClass);
+    let classes_list = docObject.getElementsByClassName(coshClass);
 
     let _results = [];
-    for (let e = 0; e < s.length; ++e) {
-        let c = s[e].childNodes;
+    for (let e = 0; e < classes_list.length; ++e) {
+        let c = classes_list[e].childNodes;
         for (let e = 0; e < c.length; ++e) {
             let a = c[e];
             for (let x = 0; x < _compare.length; ++x) {
                 if (a.className != null && a.className == _compare[x]) {
                     _results.push({
-                        type: o[_results.length].innerText,
-                        name: n[_results.length].innerText,
+                        type: typing_list[_results.length].innerText,
+                        name: naming_list[_results.length].innerText,
                         isDiscount: !x,
                         cosh: evaluate_number(a.lastChild.innerText)
                     });
@@ -369,9 +471,7 @@ function cat(lhs, rhsWith) {
     lhs.forEach(function (a, b, c) {
         let i = rhsWith.indexOf(a);
         let size = 0;
-        if (i == ~0)
-            size = 0;
-        else
+        if (i != ~0)
             size = rhsWith[i + 1];
         arr.push(a, size);
         // get size
