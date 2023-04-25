@@ -224,7 +224,7 @@ table th:after {
 	top: 25%;
 	height: 25%;
 	width: 100%;
-	background: linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, .08));
+	background: linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.08));
 }
 
 table tr:nth-child(odd):not([class^="copyied"]) {
@@ -326,7 +326,7 @@ table button {
 }
 
 .cc_image {
-	background-image: url("small_100x100.png");
+	background-image: url("./small_100x100.png");
 	display: block;
 	width: 100px;
 	height: 100px;
