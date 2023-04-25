@@ -127,7 +127,7 @@ function ui_action(code, lhs, rhs) {
 
 function ui_show_window(w, single) {
     function compare_id(lhs, jqElem) {
-        return lhs == "#" + jqElem.id;
+        return lhs == "# jqElem.id";
     }
     function compare_elem(lhs, jqElem) {
         return lhs == jqElem.get(0);
@@ -177,7 +177,7 @@ function ui_show_avail_window() {
                         return {
                             fatal: true,
                             show: true,
-                            msg: "Извините. Но файл оказался пустым: \"" + (file) + "\""
+                            msg: "Извините. Но файл оказался пустым: \" (file) + "\""
                         };
                     }
 
@@ -198,94 +198,94 @@ function ui_show_avail_window() {
                                 return {
                                     show: true,
                                     fatal: true,
-                                    msg: "Внимание найден смешанный формат данных.\n\n\tФайл (" + (file) + ") не подлежит к проверке, так как в нем содержиться несколько направлений (КБТ,МБТ).\n\n\tОжидалось \"" +
-                                        (categories[cmpt0].full) + "\", но затем последовал \"" + (categories[cmpt1].full) + "\"."
-                                };
-                            }
+                                    msg: "Внимание найден смешанный формат данных.\n\n\tФайл ( (file) + ") не подлежит к проверке, так как в нем содержиться несколько направлений(КБТ, МБТ).\n\n\tОжидалось \"
+                                        (categories[cmpt0].full) + "\", но затем последовал \" (categories[cmpt1].full) + "\"."
+                            };
                     }
+                }
                     _mark[y] = {
-                        category: cmpt0,
-                        categoryName: categories[cmpt0]
-                    }; // category
-                    //ignore reach for GSM types (for skip)
-                    return haveUnknown && params.get("type") != "gsm" ? ({
-                        fatal: false,
-                        msg: "Обнаружены новые товары, они будут неизвестными до того момента, пока не будут зарегистрированы.\n\n\tМожно продолжать."
-                    }) : null;
-                },
-                function (file, input) {
-                    if (_mark[0] != null && _mark[1] != null && (_mark[0].category != _mark[1].category)) {
-                        return {
-                            fatal: true,
-                            msg: "Ошибка!!!\n\tОбнаружены разные виды ценников КБТ и МБТ.\n\tОжидалось \"" +
-                                (categories[_mark[0].category].short) + "\", но второе было \"" + (categories[_mark[1].category].short) + "\"\nПо этому проверка не возможна."
+                    category: cmpt0,
+                    categoryName: categories[cmpt0]
+                }; // category
+            //ignore reach for GSM types (for skip)
+            return haveUnknown && params.get("type") != "gsm" ? ({
+                fatal: false,
+                msg: "Обнаружены новые товары, они будут неизвестными до того момента, пока не будут зарегистрированы.\n\n\tМожно продолжать."
+            }) : null;
+        },
+            function (file, input) {
+                if (_mark[0] != null && _mark[1] != null && (_mark[0].category != _mark[1].category)) {
+                    return {
+                        fatal: true,
+                        msg: "Ошибка!!!\n\tОбнаружены разные виды ценников КБТ и МБТ.\n\tОжидалось \"
+                            (categories[_mark[0].category].short) + "\", но второе было \" (categories[_mark[1].category].short) + "\"\nПо этому проверка не возможна."
                         }
-                    }
-
-                    return null;
                 }
+
+                return null;
+            }
             ];
-            let index_neighbour = y == 0 ? 1 : 0;
-            let file = docx[y].name;
-            let state = y == 0 ? "prev" : "next";
-            let json;
-            //Create a new HTML doc
-            _preserves[y] = document.implementation.createHTMLDocument(state);
-            //Load HTML doc to
-            _preserves[y].querySelector("html").innerHTML = content.target.result;
-            //MECHTA_COSHKA_PARSER:avail
-            try {
-                json = avail(true, _preserves[y]);
-            } catch (e) {
-                console.err(ex.message);
-                alert("Системная ошибка модуля \"мечты-кошки\"\nПодробнее:\n\t" + ex.message);
+        let index_neighbour = y == 0 ? 1 : 0;
+        let file = docx[y].name;
+        let state = y == 0 ? "prev" : "next";
+        let json;
+        //Create a new HTML doc
+        _preserves[y] = document.implementation.createHTMLDocument(state);
+        //Load HTML doc to
+        _preserves[y].querySelector("html").innerHTML = content.target.result;
+        //MECHTA_COSHKA_PARSER:avail
+        try {
+            json = avail(true, _preserves[y]);
+        } catch (e) {
+            console.err(ex.message);
+            alert("Системная ошибка модуля \"мечты-кошки\"\nПодробнее:\n\t ex.message);
                 return;
-            }
-            console.log(json);
-
-            let f = 0;
-            let fail;
-            while (f < fail_checker.length) {
-                if ((_fails[y] = fail = fail_checker[f](file, json)) != null) {
-                    if (_fails[index_neighbour] == null) {
-                        alert(fail.msg);
-
-                        if (fail.show === true && window.confirm("Показать проблему ценника?")) {
-                            window.open(URL.createObjectURL(docx[y]));
-                        }
-                    }
-                    if (fail.fatal)
-                        return;
-                }
-                ++f;
-            }
-
-            _jsons[y] = json;
-
-            // add to watches
-            sv_add_watch(file, state, json);
-
-            if (_jsons[0] != null && _jsons[1] != null) {
-
-                //State is loaded
-                jsonResult = difference(_jsons[0], _jsons[1]);
-                console.log(jsonResult);
-
-                //UPDATE
-                show_loader("#window_logo");
-                let t = setTimeout(function () {
-                    //awake async
-                    ui_show_window_only("#window_table");
-                    //show_window_push("#window_data");
-                    ui_print_result(jsonResult);
-                }, delayLoader);
-
-                sv_save_watch();
-            }
-
         }
-        reader.readAsText(docx[x]);
+        console.log(json);
+
+        let f = 0;
+        let fail;
+        while (f < fail_checker.length) {
+            if ((_fails[y] = fail = fail_checker[f](file, json)) != null) {
+                if (_fails[index_neighbour] == null) {
+                    alert(fail.msg);
+
+                    if (fail.show === true && window.confirm("Показать проблему ценника?")) {
+                        window.open(URL.createObjectURL(docx[y]));
+                    }
+                }
+                if (fail.fatal)
+                    return;
+            }
+            ++f;
+        }
+
+        _jsons[y] = json;
+
+        // add to watches
+        sv_add_watch(file, state, json);
+
+        if (_jsons[0] != null && _jsons[1] != null) {
+
+            //State is loaded
+            jsonResult = difference(_jsons[0], _jsons[1]);
+            console.log(jsonResult);
+
+            //UPDATE
+            show_loader("#window_logo");
+            let t = setTimeout(function () {
+                //awake async
+                ui_show_window_only("#window_table");
+                //show_window_push("#window_data");
+                ui_print_result(jsonResult);
+            }, delayLoader);
+
+            sv_save_watch();
+        }
+
     }
+    reader.readAsText(docx[x]);
+}
 }
 
 function show_loader(postWindow, closePrevs = true) {
@@ -294,10 +294,6 @@ function show_loader(postWindow, closePrevs = true) {
     }, delayLoader); //wait 1s
 
     ui_show_window("#window_loader", closePrevs);
-}
-
-function ui_layer_gradient_component(col) {
-    return "linear-gradient(95deg, " + col + ",rgba(0,0,0,0.1))";
 }
 
 function ui_present_copy(elem) {
@@ -333,57 +329,65 @@ function ui_present_copy(elem) {
     }, 1000);
 }
 
+
+function ui_layer_gradient_component(col) {
+    return "linear-gradient(95deg,  col + ", rgba(0, 0, 0, 0.1)) ";
+}
+
+
 function ui_print_result(jsonResult) {
     const changes_list_head = ["Измененные ценники", "Добавлены в магазин", "Удалены из магазина"];
-
+    const _str_no_change = "Нет изменений";
     function update_list(list, table, json, index) {
         let assoc_container = new Map();
-        list.innerText = changes_list_head[index] + " (" + json.length + ")";
+        list.innerText = changes_list_head[index] + " ( json.length + ") ";
         //Insert HEAD
-        table.innerHTML = "<tr>" +
-            "<th>№</th>" +
-            "<th>Тип</th>" +
-            "<th>Наименование</th>" +
-            "<th width=70>Цена</th>" +
-            "<th>Размер</th>" +
-            "<th>Действие</th>" +
-            "</tr>";
+        table.innerHTML = `<tr>
+            <th>№</th>
+            <th>Тип</th>
+            <th>Наименование</th>
+            <th width=70>Цена</th>
+            <th>Размер</th>
+            <th>Действие</th>
+        </tr>`;
 
         //Insert Rows
         if (json.length > 0) {
             for (let x = 0; x < json.length; ++x) {
-                let size = indexof_size(json[x].type);
-                table.innerHTML += "<tr>" +
-                    "<td>" + (x + 1).toString() + "</td>" +
-                    "<td>" + json[x].type + "</td>" +
-                    "<td>" + json[x].name + "</td>" +
-                    "<td style=\"" + (json[x].isDiscount ? ("background:" + ui_layer_gradient_component("yellow")) : "") + "\">" + translate_to_number(json[x].cosh) + "</td>" +
-                    "<td style=\"background: " + ui_layer_gradient_component(size.color) + "\">" + size.size + "</td>" +
-                    "<td><button class=\"fbutton\" json_index='" + x + ":" + index + "' onclick=\"ui_present_copy(this)\">Копировать 📋</button></td>" +
-                    "</tr>";
-                if (assoc_container.get(size.size_mm) == undefined) {
-                    assoc_container.set(size.size_mm, 1);
+                let size_info = indexof_size(json[x].type);
+                table.innerHTML += `<tr>
+                    <td>${(x + 1).toString()}</td>
+                    <td>${json[x].type}</td>
+                    <td>${json[x].name}</td>
+                    <td style="${(json[x].isDiscount ? ("background:" + ui_layer_gradient_component("yellow")) : "")}">${translate_to_number(json[x].cosh)}</td>
+                    <td style="background: ${ui_layer_gradient_component(size_info.color)}">${size_info.size}</td>
+                    <td>
+                        <button class="fbutton" json_index="${x}:${index}" onclick="ui_present_copy(this)">Копировать 📋</button>
+                    </td>
+                </tr>`;
+                if (assoc_container.get(size_info.size_mm) == undefined) {
+                    assoc_container.set(size_info.size_mm, 1);
                 } else {
-                    let val = assoc_container.get(size.size_mm);
-                    assoc_container.set(size.size_mm, ++val);
+                    let val = assoc_container.get(size_info.size_mm);
+                    assoc_container.set(size_info.size_mm, ++val);
                 }
 
             }
         } else {
-            table.innerHTML += "<tr style=\"background: " + ui_layer_gradient_component("yellow") + ";\">" +
-                "<td></td>" +
-                "<td></td>" +
-                "<td>Нет изменений</td>" +
-                "<td></td>" +
-                "<td></td>" +
-                "<td></td>" +
-                "</tr>";
+            table.innerHTML += `<tr style=\"background:  ui_layer_gradient_component("yellow") + ";\">
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                </tr>`;
         }
         return assoc_container;
     }
 
     //let _cont = $("#list_body_chn")[0].parentElement.parentElement;
-    //_cont.innerHTML = "" + _cont.innerHTML;
+    //_cont.innerHTML = " _cont.innerHTML;
 
     let lists = [$("#thead_change")[0], $("#thead_add")[0], $("#thead_remove")[0]];
     let tables = [$("#list_body_chn")[0], $("#list_body_add")[0], $("#list_body_rem")[0]];
@@ -401,8 +405,7 @@ function ui_print_result(jsonResult) {
     container.forEach(function (value, key, map) {
         let index = get_cc_from(key);
         let cp = calcPaper(key, value);
-        let pstr = $(corners[index]).html();
-        $(corners[index]).html(pstr.replace("{}", cp.papers).replace("{}", value));
+        $(corners[index]).html($(corners[index]).html().replace("{}", cp.papers).replace("{}", value));
         if (cmptN[index] == null) cmptN[index] = 1;
         totalPages += cp.papers;
     });
@@ -468,11 +471,11 @@ function user_interface_present() {
             if (!(permission = x.error == 0)) {
                 filename = "Неверный имя МБО.";
                 let target = params.get("target");
-                alert("Вы " + (target != null ? "\""+target+"\" " : "") + "ввели некорректное название для МБО.\n"+
-                "Пример правильности имени: \n\tGSM-10.10.2023-10.22.\n\tKBT-10.10.2023-10.22.\n\tMBT-10.10.2023-10.22.\n\n"+
-                "Правила:\n[ОТДЕЛЕНИЕ]-[ДЕНЬ].[МЕСЯЦ].[ГОД]-[ЧАСЫ].[МИНУТЫ].\n\n"+
-                "Сообщение ошибки: " + x.error_message + 
-                "\nКод ошибки: " + x.error);
+                alert("Вы  (target != null ? "\"" + target + "\" " : "") + "ввели некорректное название для МБО.\n" +
+                    "Пример правильности имени: \n\tGSM-10.10.2023-10.22.\n\tKBT-10.10.2023-10.22.\n\tMBT-10.10.2023-10.22.\n\n" +
+                    "Правила:\n[ОТДЕЛЕНИЕ]-[ДЕНЬ].[МЕСЯЦ].[ГОД]-[ЧАСЫ].[МИНУТЫ].\n\n" +
+                    "Сообщение ошибки:  x.error_message + 
+                "\nКод ошибки:  x.error);
             }
         }
 
