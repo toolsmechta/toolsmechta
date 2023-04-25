@@ -1,6 +1,6 @@
 //main content
 
-const version = "1.0.2";
+const version = "1.0.3";
 const haveLoad = true;
 const debug_mode = false;
 const delayLoader = debug_mode ? 100 : 1000;
@@ -15,12 +15,7 @@ var windows = [];
 
 const __change_log =
     `
-+ Добавлено: Проверка на правильный ввод имен МБО. 
-    Защита от ошибок ввода даты и время!
-    ***(Функция выполняется через name_analyze())*** 
 * Обновлен дизайн
-* Улучшена стабильность системы. 
-* Удачное исправление некторых ошибок и багов.
 Приятной работы - Мечта мены! :)
 `;
 
@@ -127,7 +122,7 @@ function ui_action(code, lhs, rhs) {
 
 function ui_show_window(w, single) {
     function compare_id(lhs, jqElem) {
-        return lhs == "# jqElem.id";
+        return lhs == "#" + jqElem.id;
     }
     function compare_elem(lhs, jqElem) {
         return lhs == jqElem.get(0);
@@ -177,7 +172,7 @@ function ui_show_avail_window() {
                         return {
                             fatal: true,
                             show: true,
-                            msg: "Извините. Но файл оказался пустым: \" (file) + "\""
+                            msg: "Извините. Но файл оказался пустым: \"" + (file) + "\""
                         };
                     }
 
@@ -198,94 +193,94 @@ function ui_show_avail_window() {
                                 return {
                                     show: true,
                                     fatal: true,
-                                    msg: "Внимание найден смешанный формат данных.\n\n\tФайл ( (file) + ") не подлежит к проверке, так как в нем содержиться несколько направлений(КБТ, МБТ).\n\n\tОжидалось \"
-                                        (categories[cmpt0].full) + "\", но затем последовал \" (categories[cmpt1].full) + "\"."
-                            };
+                                    msg: "Внимание найден смешанный формат данных.\n\n\tФайл (" + (file) + ") не подлежит к проверке, так как в нем содержиться несколько направлений (КБТ,МБТ).\n\n\tОжидалось \"" +
+                                        (categories[cmpt0].full) + "\", но затем последовал \"" + (categories[cmpt1].full) + "\"."
+                                };
+                            }
                     }
-                }
                     _mark[y] = {
-                    category: cmpt0,
-                    categoryName: categories[cmpt0]
-                }; // category
-            //ignore reach for GSM types (for skip)
-            return haveUnknown && params.get("type") != "gsm" ? ({
-                fatal: false,
-                msg: "Обнаружены новые товары, они будут неизвестными до того момента, пока не будут зарегистрированы.\n\n\tМожно продолжать."
-            }) : null;
-        },
-            function (file, input) {
-                if (_mark[0] != null && _mark[1] != null && (_mark[0].category != _mark[1].category)) {
-                    return {
-                        fatal: true,
-                        msg: "Ошибка!!!\n\tОбнаружены разные виды ценников КБТ и МБТ.\n\tОжидалось \"
-                            (categories[_mark[0].category].short) + "\", но второе было \" (categories[_mark[1].category].short) + "\"\nПо этому проверка не возможна."
+                        category: cmpt0,
+                        categoryName: categories[cmpt0]
+                    }; // category
+                    //ignore reach for GSM types (for skip)
+                    return haveUnknown && params.get("type") != "gsm" ? ({
+                        fatal: false,
+                        msg: "Обнаружены новые товары, они будут неизвестными до того момента, пока не будут зарегистрированы.\n\n\tМожно продолжать."
+                    }) : null;
+                },
+                function (file, input) {
+                    if (_mark[0] != null && _mark[1] != null && (_mark[0].category != _mark[1].category)) {
+                        return {
+                            fatal: true,
+                            msg: "Ошибка!!!\n\tОбнаружены разные виды ценников КБТ и МБТ.\n\tОжидалось \"" +
+                                (categories[_mark[0].category].short) + "\", но второе было \"" + (categories[_mark[1].category].short) + "\"\nПо этому проверка не возможна."
                         }
-                }
-
-                return null;
-            }
-            ];
-        let index_neighbour = y == 0 ? 1 : 0;
-        let file = docx[y].name;
-        let state = y == 0 ? "prev" : "next";
-        let json;
-        //Create a new HTML doc
-        _preserves[y] = document.implementation.createHTMLDocument(state);
-        //Load HTML doc to
-        _preserves[y].querySelector("html").innerHTML = content.target.result;
-        //MECHTA_COSHKA_PARSER:avail
-        try {
-            json = avail(true, _preserves[y]);
-        } catch (e) {
-            console.err(ex.message);
-            alert("Системная ошибка модуля \"мечты-кошки\"\nПодробнее:\n\t ex.message);
-                return;
-        }
-        console.log(json);
-
-        let f = 0;
-        let fail;
-        while (f < fail_checker.length) {
-            if ((_fails[y] = fail = fail_checker[f](file, json)) != null) {
-                if (_fails[index_neighbour] == null) {
-                    alert(fail.msg);
-
-                    if (fail.show === true && window.confirm("Показать проблему ценника?")) {
-                        window.open(URL.createObjectURL(docx[y]));
                     }
+
+                    return null;
                 }
-                if (fail.fatal)
-                    return;
+            ];
+            let index_neighbour = y == 0 ? 1 : 0;
+            let file = docx[y].name;
+            let state = y == 0 ? "prev" : "next";
+            let json;
+            //Create a new HTML doc
+            _preserves[y] = document.implementation.createHTMLDocument(state);
+            //Load HTML doc to
+            _preserves[y].querySelector("html").innerHTML = content.target.result;
+            //MECHTA_COSHKA_PARSER:avail
+            try {
+                json = avail(true, _preserves[y]);
+            } catch (e) {
+                console.err(ex.message);
+                alert("Системная ошибка модуля \"мечты-кошки\"\nПодробнее:\n\t" + ex.message);
+                return;
             }
-            ++f;
+            console.log(json);
+
+            let f = 0;
+            let fail;
+            while (f < fail_checker.length) {
+                if ((_fails[y] = fail = fail_checker[f](file, json)) != null) {
+                    if (_fails[index_neighbour] == null) {
+                        alert(fail.msg);
+
+                        if (fail.show === true && window.confirm("Показать проблему ценника?")) {
+                            window.open(URL.createObjectURL(docx[y]));
+                        }
+                    }
+                    if (fail.fatal)
+                        return;
+                }
+                ++f;
+            }
+
+            _jsons[y] = json;
+
+            // add to watches
+            sv_add_watch(file, state, json);
+
+            if (_jsons[0] != null && _jsons[1] != null) {
+
+                //State is loaded
+                jsonResult = difference(_jsons[0], _jsons[1]);
+                console.log(jsonResult);
+
+                //UPDATE
+                show_loader("#window_logo");
+                let t = setTimeout(function () {
+                    //awake async
+                    ui_show_window_only("#window_table");
+                    //show_window_push("#window_data");
+                    ui_print_result(jsonResult);
+                }, delayLoader);
+
+                sv_save_watch();
+            }
+
         }
-
-        _jsons[y] = json;
-
-        // add to watches
-        sv_add_watch(file, state, json);
-
-        if (_jsons[0] != null && _jsons[1] != null) {
-
-            //State is loaded
-            jsonResult = difference(_jsons[0], _jsons[1]);
-            console.log(jsonResult);
-
-            //UPDATE
-            show_loader("#window_logo");
-            let t = setTimeout(function () {
-                //awake async
-                ui_show_window_only("#window_table");
-                //show_window_push("#window_data");
-                ui_print_result(jsonResult);
-            }, delayLoader);
-
-            sv_save_watch();
-        }
-
+        reader.readAsText(docx[x]);
     }
-    reader.readAsText(docx[x]);
-}
 }
 
 function show_loader(postWindow, closePrevs = true) {
@@ -296,17 +291,19 @@ function show_loader(postWindow, closePrevs = true) {
     ui_show_window("#window_loader", closePrevs);
 }
 
+function ui_layer_gradient_component(col) {
+    return "linear-gradient(95deg, " + col + ",rgba(0,0,0,0.1))";
+}
+
 function ui_present_copy(elem) {
     var _ecopy = document.createElement("textarea");
     //split by indexes
     let ifi = elem.getAttribute("json_index").split(":");
     let jsonElem = (ifi[1] == 0 ? jsonResult.changed : ifi[1] == 1 ? jsonResult.addedNew : jsonResult.prevRemoved)[ifi[0]];
+
     _ecopy.style.position = 'fixed';
-
     _ecopy.style.background = 'transparent';
-
     _ecopy.value = jsonElem.name;
-
     document.body.appendChild(_ecopy);
     _ecopy.focus();
     _ecopy.select();
@@ -323,24 +320,18 @@ function ui_present_copy(elem) {
     let node = $(elem.parentNode.parentNode);
     node.addClass("copyied");
     node.css("background", ui_layer_gradient_component(indexof_size(jsonElem.type).color));
-    elem.innerText = 'Скопировано ✓';
+    elem.innerText = 'Скопировано';
     setTimeout(function () {
-        elem.innerText = 'Копировать 📋';
+        elem.innerText = 'Копировать';
     }, 1000);
 }
-
-
-function ui_layer_gradient_component(col) {
-    return "linear-gradient(95deg,  col + ", rgba(0, 0, 0, 0.1)) ";
-}
-
 
 function ui_print_result(jsonResult) {
     const changes_list_head = ["Измененные ценники", "Добавлены в магазин", "Удалены из магазина"];
     const _str_no_change = "Нет изменений";
     function update_list(list, table, json, index) {
         let assoc_container = new Map();
-        list.innerText = changes_list_head[index] + " ( json.length + ") ";
+        list.innerHTML = `${changes_list_head[index]} (<a style="border-bottom: 1px dotted">${json.length}</a>)`;
         //Insert HEAD
         table.innerHTML = `<tr>
             <th>№</th>
@@ -362,7 +353,7 @@ function ui_print_result(jsonResult) {
                     <td style="${(json[x].isDiscount ? ("background:" + ui_layer_gradient_component("yellow")) : "")}">${translate_to_number(json[x].cosh)}</td>
                     <td style="background: ${ui_layer_gradient_component(size_info.color)}">${size_info.size}</td>
                     <td>
-                        <button class="fbutton" json_index="${x}:${index}" onclick="ui_present_copy(this)">Копировать 📋</button>
+                        <button class="cbutton cbutton_icon_clipboard" json_index="${x}:${index}" onclick="ui_present_copy(this)">Копировать</button>
                     </td>
                 </tr>`;
                 if (assoc_container.get(size_info.size_mm) == undefined) {
@@ -374,10 +365,10 @@ function ui_print_result(jsonResult) {
 
             }
         } else {
-            table.innerHTML += `<tr style=\"background:  ui_layer_gradient_component("yellow") + ";\">
+            table.innerHTML += `<tr style="background: ${ui_layer_gradient_component("yellow")}">
                 <td></td>
                 <td></td>
-                <td></td>
+                <td>${_str_no_change}</td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -469,13 +460,13 @@ function user_interface_present() {
         if (params.get("maybe_error") == "true") {
             x = name_analyze(filename);
             if (!(permission = x.error == 0)) {
-                filename = "Неверный имя МБО.";
                 let target = params.get("target");
-                alert("Вы  (target != null ? "\"" + target + "\" " : "") + "ввели некорректное название для МБО.\n" +
+                filename = "Неверный имя МБО.";
+                alert("Вы " + (target != null ? "\"" + target + "\" " : "") + "ввели некорректное название для МБО.\n" +
                     "Пример правильности имени: \n\tGSM-10.10.2023-10.22.\n\tKBT-10.10.2023-10.22.\n\tMBT-10.10.2023-10.22.\n\n" +
                     "Правила:\n[ОТДЕЛЕНИЕ]-[ДЕНЬ].[МЕСЯЦ].[ГОД]-[ЧАСЫ].[МИНУТЫ].\n\n" +
-                    "Сообщение ошибки:  x.error_message + 
-                "\nКод ошибки:  x.error);
+                    "Сообщение ошибки: " + x.error_message +
+                    "\nКод ошибки: " + x.error);
             }
         }
 
