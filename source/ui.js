@@ -1,6 +1,6 @@
 //main content
 
-const version = "1.0.3";
+const version = "1.0.4";
 const haveLoad = true;
 const debug_mode = false;
 const delayLoader = debug_mode ? 100 : 1000;
@@ -15,7 +15,7 @@ var windows = [];
 
 const __change_log =
     `
-* Обновлен дизайн
+* Обновлен метод индексирование размера цеников (замена Map)
 Приятной работы - Мечта мены! :)
 `;
 
