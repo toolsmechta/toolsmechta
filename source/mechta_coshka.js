@@ -189,7 +189,6 @@ function name_analyze(target) {
     };
 }
 
-
 function stat(jsonResult) {
     /*
     JsonResult impl:
@@ -256,25 +255,33 @@ function indexof_size(type) {
         sz_mm,
         cat,
         cl,
-        x,
-        y = -1;
+        x;
     if (typeof (raw_types) == 'string') {
+        //convert data from raw 
         raw_types = JSON.parse(b64_to_utf8(raw_types));
-    }
-    for (cat = 0; cat < raw_types.length;) {
-        x = raw_types[cat].indexOf(type);
-        if (x != ~0) {
-            y = raw_types[cat][x + 1];
-            break;
-        }
-        ++cat;
+        cat = 0;
+        do {
+            let _conv = new Map();
+            let _link = raw_types[cat];
+            let _size = _link.length / 2;
+            for (let x = 0; x < _size; ++x) {
+                _conv.set(_link[x * 2], _link[x * 2 + 1]);
+            }
+            raw_types[cat] = _conv; // replace a given
+        } while (++cat < raw_types.length);
     }
 
-    if (x != ~0) {
+    for (cat = 0; cat < raw_types.length;) {
+        if ((x = raw_types[cat].get(type)) != undefined)
+            break;
+        ++cat
+    }
+
+    if (x != undefined && typeof (x) == "number") {
         // x * width + y = формула двухмерной индексаций (преобразует двумерную точку в одномерную)
-        sz = sizes[y * lwidth];
-        cl = sizes[y * lwidth + 1];
-        sz_mm = sizes[y * lwidth + 2];
+        sz = sizes[x * lwidth];
+        cl = sizes[x * lwidth + 1];
+        sz_mm = sizes[x * lwidth + 2];
     } else {
         sz = types_unknown;
         cl = "#ff04c0";
