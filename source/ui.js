@@ -1,8 +1,9 @@
 //main content
 
-const version = "1.0.4";
+const version = "1.0.5";
 const haveLoad = true;
 const debug_mode = false;
+const cat_draw = true;
 const delayLoader = debug_mode ? 100 : 1000;
 const first_window = "#window_logo";
 const localstorage_key = "badcast_for_cast";
@@ -15,7 +16,9 @@ var windows = [];
 
 const __change_log =
     `
-* Обновлен метод индексирование размера цеников (замена Map)
++ Добавлена возможность отменить выделение.
++ Добавлена положение кошки, когда она отдыхает, и когда надо работать!
+* Улучшена стабильность.
 Приятной работы - Мечта мены! :)
 `;
 
@@ -326,6 +329,12 @@ function ui_present_copy(elem) {
     }, 1000);
 }
 
+function ui_present_copy_cancel(elem) {
+    elem = $(elem.parentNode.parentNode);
+    elem.removeClass("copyied");
+    elem.css("background", "");
+}
+
 function ui_print_result(jsonResult) {
     const changes_list_head = ["Измененные ценники", "Добавлены в магазин", "Удалены из магазина"];
     const _str_no_change = "Нет изменений";
@@ -353,6 +362,7 @@ function ui_print_result(jsonResult) {
                     <td style="${(json[x].isDiscount ? ("background:" + ui_layer_gradient_component("yellow")) : "")}">${translate_to_number(json[x].cosh)}</td>
                     <td style="background: ${ui_layer_gradient_component(size_info.color)}">${size_info.size}</td>
                     <td>
+                        <button class="cbutton cbutton_icon_cancel" onclick="ui_present_copy_cancel(this)">x</button>
                         <button class="cbutton cbutton_icon_clipboard" json_index="${x}:${index}" onclick="ui_present_copy(this)">Копировать</button>
                     </td>
                 </tr>`;
@@ -374,6 +384,20 @@ function ui_print_result(jsonResult) {
                 <td></td>
                 </tr>`;
         }
+
+        //cat draw 
+        if (cat_draw) {
+            let catClass = ((json.length > 0) ? "cat_state_work" : "cat_state_sleep");
+            let p = $(table.parentNode.parentNode);
+            let cat = $("<span></span>").addClass(catClass);
+            p.append(cat);
+            //p.insertBefore(cat);
+            /*.innerHTML += `
+                 <span class="${}"></span>
+             `;
+             parentNode.insertBefore($(lhs)[0], firstElem);*/
+        }
+
         return assoc_container;
     }
 
