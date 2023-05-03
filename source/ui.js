@@ -374,6 +374,11 @@ function ui_component_table_sort(table, elem, orderBy) {
             switching = true;
         }
     }
+    rows = table.rows;
+    //fix numbers
+    for (i = 1; i < rows.length; ++i) {
+        rows[i].getElementsByTagName("TD")[0].innerText = (i);
+    }
 
 }
 
