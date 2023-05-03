@@ -1,3 +1,5 @@
+/*MIT License*/
+
 //this code was created by me, see.
 //this JS script created to facilitate the process of checking price tags based on a storefront (mechta.kz)
 //github: github.com/badcast
@@ -62,7 +64,7 @@ function evaluate_number(e) {
 //Convert number 123456789 to beautiful 123 456 789
 function translate_to_number(num, _level = 3, space = " ") {
     const radix = 10;
-    let result = 0;
+    let result = "";
     let level = 1;
 
     let dv = div(0, 1);
