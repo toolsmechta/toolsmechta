@@ -1,6 +1,6 @@
-//main content
+/*MIT License*/
 
-const version = "1.0.5";
+const version = "1.0.6";
 const haveLoad = true;
 const debug_mode = false;
 const cat_draw = true;
@@ -17,7 +17,9 @@ var windows = [];
 const __change_log =
     `
 + Добавлена возможность отменить выделение.
-+ Добавлена положение кошки, когда она отдыхает, и когда надо работать!
++ Добавлена положение кошки, когда она отдыхает, и когда надо работать.
+* Исправлена показатель ценника.
++ Добавлена сортировка элементов.
 * Улучшена стабильность.
 Приятной работы - Мечта мены! :)
 `;
@@ -301,7 +303,7 @@ function ui_layer_gradient_component(col) {
 function ui_present_copy(elem) {
     var _ecopy = document.createElement("textarea");
     //split by indexes
-    let ifi = elem.getAttribute("json_index").split(":");
+    let ifi = elem.parentNode.parentNode.getAttribute("json_index").split(":");
     let jsonElem = (ifi[1] == 0 ? jsonResult.changed : ifi[1] == 1 ? jsonResult.addedNew : jsonResult.prevRemoved)[ifi[0]];
 
     _ecopy.style.position = 'fixed';
@@ -335,6 +337,46 @@ function ui_present_copy_cancel(elem) {
     elem.css("background", "");
 }
 
+
+function ui_component_table_sort(table, elem, orderBy) {
+    //let ifi = orderBy.parentNode.parentNode.getAttribute("json_index").split(":");
+    //let jsonElem = (ifi[1] == 0 ? jsonResult.changed : ifi[1] == 1 ? jsonResult.addedNew : jsonResult.prevRemoved)[ifi[0]];
+
+    const classes = ["ordering_by_down", "ordering_by_up"];
+    var rows, switching, i, x, y, shouldSwitch;
+
+    if (elem != null) {
+        elem = $(elem);
+        if (orderBy == null) {
+            //auto switch
+            orderBy = !elem.hasClass(classes[0]);
+        }
+        elem.removeClass(classes.toString().replace(",", " ")).addClass(orderBy ? classes[0] : classes[1]);
+    }
+    else
+        orderBy = orderBy ?? true;
+
+    switching = true;
+    while (switching) {
+        switching = false;
+        rows = table.rows;
+        for (i = 1; i < (rows.length - 1); ++i) {
+            shouldSwitch = false;
+            x = rows[i].getElementsByTagName("TD")[4].innerHTML.toLowerCase();
+            y = rows[i + 1].getElementsByTagName("TD")[4].innerHTML.toLowerCase();
+            if ((orderBy ? x > y : x < y)) {
+                shouldSwitch = true;
+                break;
+            }
+        }
+        if (shouldSwitch) {
+            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+            switching = true;
+        }
+    }
+
+}
+
 function ui_print_result(jsonResult) {
     const changes_list_head = ["Измененные ценники", "Добавлены в магазин", "Удалены из магазина"];
     const _str_no_change = "Нет изменений";
@@ -343,27 +385,27 @@ function ui_print_result(jsonResult) {
         list.innerHTML = `${changes_list_head[index]} (<a style="border-bottom: 1px dotted">${json.length}</a>)`;
         //Insert HEAD
         table.innerHTML = `<tr>
-            <th>№</th>
+            <th style="width: 0;">№</th>
             <th>Тип</th>
-            <th>Наименование</th>
+            <th >Наименование</th>
             <th width=70>Цена</th>
-            <th>Размер</th>
-            <th>Действие</th>
+            <th style="width: 0;" ><span class="ordering_by_down">Размер</span></th>
+            <th style="width: 0;">Действие</th>
         </tr>`;
 
         //Insert Rows
         if (json.length > 0) {
             for (let x = 0; x < json.length; ++x) {
                 let size_info = indexof_size(json[x].type);
-                table.innerHTML += `<tr>
+                table.innerHTML += `<tr json_index="${x}:${index}">
                     <td>${(x + 1).toString()}</td>
                     <td>${json[x].type}</td>
                     <td>${json[x].name}</td>
                     <td style="${(json[x].isDiscount ? ("background:" + ui_layer_gradient_component("yellow")) : "")}">${translate_to_number(json[x].cosh)}</td>
                     <td style="background: ${ui_layer_gradient_component(size_info.color)}">${size_info.size}</td>
-                    <td>
+                    <td >
                         <button class="cbutton cbutton_icon_cancel" onclick="ui_present_copy_cancel(this)">x</button>
-                        <button class="cbutton cbutton_icon_clipboard" json_index="${x}:${index}" onclick="ui_present_copy(this)">Копировать</button>
+                        <button class="cbutton cbutton_icon_clipboard" onclick="ui_present_copy(this)">Копировать</button>
                     </td>
                 </tr>`;
                 if (assoc_container.get(size_info.size_mm) == undefined) {
@@ -372,8 +414,9 @@ function ui_print_result(jsonResult) {
                     let val = assoc_container.get(size_info.size_mm);
                     assoc_container.set(size_info.size_mm, ++val);
                 }
-
             }
+            $(table).children("tr").children("th").children("span.ordering_by_down")[0].onclick = function () { ui_component_table_sort(table, this); };
+            ui_component_table_sort(table, null, true);
         } else {
             table.innerHTML += `<tr style="background: ${ui_layer_gradient_component("yellow")}">
                 <td></td>
@@ -391,11 +434,6 @@ function ui_print_result(jsonResult) {
             let p = $(table.parentNode.parentNode);
             let cat = $("<span></span>").addClass(catClass);
             p.append(cat);
-            //p.insertBefore(cat);
-            /*.innerHTML += `
-                 <span class="${}"></span>
-             `;
-             parentNode.insertBefore($(lhs)[0], firstElem);*/
         }
 
         return assoc_container;
@@ -440,6 +478,7 @@ function ui_version_notify() {
         localStorage.setItem(ver_key, version);
     }
 }
+
 
 function user_interface_present() {
 

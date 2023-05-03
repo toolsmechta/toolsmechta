@@ -197,7 +197,7 @@ body {
 }
 
 .cat_state_sleep, .cat_state_work {
-	margin: auto;
+	margin: auto; 
 	width: 256px;
 	height: 256px;
 	display: block;
@@ -207,6 +207,23 @@ body {
 .cat_state_work {
 	background-position-x: -256px;
 }
+
+.ordering_by_up,.ordering_by_down{
+	background: rgb(253, 139, 100);
+	color: #2f2e2e;
+	width: 100%;
+	height: 25px;
+	cursor: pointer;
+}
+
+.ordering_by_up::after{
+	content: "🠉";
+}
+
+.ordering_by_down::after{
+	content: "🠋";
+}
+
 
 .cc_corner:after {
 	content: "";
