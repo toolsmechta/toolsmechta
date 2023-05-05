@@ -164,7 +164,8 @@ function ui_show_avail_window() {
     _mark = [null, null];
     _preserves = [null, null];
     _fails = [null, null];
-
+    
+    let lastShownAlert = false;
     let _doctype_info = [null, null];
     for (let x = 0; x < docx.length; ++x) {
         let y = x; // y save as local x
@@ -248,7 +249,8 @@ function ui_show_avail_window() {
             while (f < fail_checker.length) {
                 if ((_fails[y] = fail = fail_checker[f](file, json)) != null) {
                     if (_fails[index_neighbour] == null) {
-                        alert(fail.msg);
+                        if (fail.fatal || lastShownAlert == false && (lastShownAlert = true))
+                            alert(fail.msg);
 
                         if (fail.show === true && window.confirm("Показать проблему ценника?")) {
                             window.open(URL.createObjectURL(docx[y]));
@@ -268,7 +270,14 @@ function ui_show_avail_window() {
             if (_jsons[0] != null && _jsons[1] != null) {
 
                 //State is loaded
-                jsonResult = difference(_jsons[0], _jsons[1]);
+                try {
+                    jsonResult = difference(_jsons[0], _jsons[1]);
+                } catch (e) {
+                    console.err(ex.message);
+                    alert("Системная ошибка модуля \"мечты-кошки\"\nПодробнее:\n\t" + ex.message);
+                    return;
+                }
+
                 console.log(jsonResult);
 
                 //UPDATE
