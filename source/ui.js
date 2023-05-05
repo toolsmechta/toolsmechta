@@ -419,11 +419,12 @@ function ui_print_result(jsonResult) {
                     <td>${(x + 1).toString()}</td>
                     <td>${targetMBO.type}</td>
                     <td>${targetMBO.name}</td>
-                    <td class="cosh_self_general" style="${(targetMBO.isDiscount ? ("background:" + ui_layer_gradient_component("yellow")) : "")};">
-                        <span class="cosh_self_new">${translate_to_number(targetMBO.cosh)}</span>
-                        ${targetMBO.oldIsDiscount ?
-                        `<span class="cosh_self_old" style="${(targetMBO.oldIsDiscount ? ("background:" + ui_layer_gradient_component("yellow")) : "")};">↯${translate_to_number(targetMBO.oldCosh)}</span>`
-                        : ""}
+                    <td class="${targetMBO.oldIsDiscount != undefined ? "cosh_self_general" : ""}" style="${(targetMBO.isDiscount ? ("background:" + ui_layer_gradient_component("yellow")) : "")};">
+                        ${targetMBO.oldIsDiscount != undefined ?
+                        `<span class="cosh_self_new">${translate_to_number(targetMBO.cosh)}</span>
+                            <span class="cosh_self_old" style="${(targetMBO.oldIsDiscount ? ("background:" + ui_layer_gradient_component("yellow")) : "")};">↯${translate_to_number(targetMBO.oldCosh)}</span>`
+                        :
+                        (translate_to_number(targetMBO.cosh))}
                     </td>
                     <td style="background: ${ui_layer_gradient_component(size_info.color)}">${size_info.size}</td>
                     <td>
