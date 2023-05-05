@@ -226,7 +226,7 @@ function stat(jsonResult) {
         let el = jsonResult.changed[x];
         let coshRad = get_radix_n(el.cosh, 2);
         stats[x] = {
-            kind: "unknown",
+            type: indexof_size(el.type).category,
             oldCosh: el.oldCosh,
             cosh: el.cosh,
             lastOf: coshRad,
@@ -427,39 +427,40 @@ function avail(e = !0, docObject = document) {
     }
     return _results
 }
-function difference(e, l) {
-    let t = [],
-        n = [],
-        s = [];
-    for (let n = 0; n < e.length; ++n) {
+function difference(prev, next) {
+    let _changedList = [],
+        _addedList = [],
+        _previuousList = [];
+    for (let n = 0; n < prev.length; ++n) {
         let o = !1,
             r = !1;
-        for (let s = 0; l.length > s; ++s) {
-            let c = e[n].name === l[s].name && e[n].type === l[s].type;
+        for (let s = 0; next.length > s; ++s) {
+            let c = prev[n].name === next[s].name && prev[n].type === next[s].type;
             if (!o && c && (r = !0,
-                e[n].cosh != l[s].cosh || e[n].isDiscount != l[s].isDiscount)) {
-                l[s].oldCosh = e[n].cosh;
-                t.push(l[s]),
+                prev[n].cosh != next[s].cosh || prev[n].isDiscount != next[s].isDiscount)) {
+                next[s].oldCosh = prev[n].cosh;
+                next[s].oldIsDiscount = prev[n].isDiscount;
+                _changedList.push(next[s]),
                     o = !0;
                 break
             }
         }
-        r || s.push(e[n])
+        r || _previuousList.push(prev[n])
     }
-    for (let t = 0; t < l.length; ++t) {
+    for (let t = 0; t < next.length; ++t) {
         let s = !1;
-        for (let n = 0; n < e.length; ++n) {
-            if (e[n].name === l[t].name && e[n].type === l[t].type) {
+        for (let n = 0; n < prev.length; ++n) {
+            if (prev[n].name === next[t].name && prev[n].type === next[t].type) {
                 s = !0;
                 break
             }
         }
-        s || n.push(l[t])
+        s || _addedList.push(next[t])
     }
     let obj = {
-        changed: t,
-        addedNew: n,
-        prevRemoved: s
+        changed: _changedList,
+        addedNew: _addedList,
+        prevRemoved: _previuousList
     };
     //calc stats
     obj.stats = stat(obj);
