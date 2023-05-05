@@ -20,7 +20,7 @@ body {
 	height: 332.16336949585195px;
 	border: 3px solid #d61167;
 	margin: auto;
-	background-image: url('images.jpg')
+	background-image: url('./images.jpg')
 }
 
 .loader {
@@ -83,10 +83,12 @@ body {
 }
 
 .input-file-icon {
-	background: url('./mbo_tar.png') no-repeat;
+	background: url('./doc-icon.png') no-repeat;
+	background-size: contain;
+	position: relative;
+	top: 25px;
 	width: 90px;
 	height: 100pt;
-	position: relative;
 }
 
 .input-file-text {
@@ -182,6 +184,7 @@ body {
 	margin-left: -9px;
 	left: 0;
 }
+
 .cbutton:focus {
 	box-shadow: #3c4fe0 0 0 0 1.5px inset, rgba(45, 35, 66, .4) 0 2px 4px, rgba(45, 35, 66, .3) 0 7px 13px -3px, #3c4fe0 0 -3px 0 inset;
 }
@@ -196,8 +199,9 @@ body {
 	transform: translateY(2px);
 }
 
-.cat_state_sleep, .cat_state_work {
-	margin: auto; 
+.cat_state_sleep,
+.cat_state_work {
+	margin: auto;
 	width: 256px;
 	height: 256px;
 	display: block;
@@ -208,7 +212,8 @@ body {
 	background-position-x: -256px;
 }
 
-.ordering_by_up,.ordering_by_down{
+.ordering_by_up,
+.ordering_by_down {
 	background: rgb(253, 139, 100);
 	color: #2f2e2e;
 	width: 100%;
@@ -216,11 +221,11 @@ body {
 	cursor: pointer;
 }
 
-.ordering_by_up::after{
+.ordering_by_up::after {
 	content: "🠉";
 }
 
-.ordering_by_down::after{
+.ordering_by_down::after {
 	content: "🠋";
 }
 
@@ -409,4 +414,38 @@ table button {
 	padding-bottom: 2px;
 	border-bottom: 1px solid;
 	/* text-decoration: underline dotted;  */
+}
+
+.cosh_self_general {
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+.cosh_self_new,
+.cosh_self_old {
+	padding: 0;
+	float: left;
+}
+
+.cosh_self_new {
+	color: black;
+	margin-right: auto;
+	text-align: center;
+	width: 100%;
+}
+
+.cosh_self_old {
+	cursor: pointer;
+	color: #575757;
+	border: 1px dashed;
+	padding-left: 5px;
+	padding-right: 5px;
+	font-size: 12px;
+	text-align: start;
+}
+
+.cosh_self_old:hover {
+	color: black;
+	border-style: solid;
 }

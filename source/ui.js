@@ -1,6 +1,6 @@
 /*MIT License*/
 
-const version = "1.0.6";
+const version = "1.0.7";
 const haveLoad = true;
 const debug_mode = false;
 const cat_draw = true;
@@ -16,11 +16,11 @@ var windows = [];
 
 const __change_log =
     `
-+ Добавлена возможность отменить выделение.
-+ Добавлена положение кошки, когда она отдыхает, и когда надо работать.
-* Исправлена показатель ценника.
-+ Добавлена сортировка элементов.
-* Улучшена стабильность.
++ Добавлен показатель предыдущей цены товара.
++ Добавлена информация об коефицентности.
+* Исправлен показатель ценника.
+* Исправлены небольшие дэфекты в системе и прочее улучшения.
+* ZzZ - я пошел спать, устал! 
 Приятной работы - Мечта мены! :)
 `;
 
@@ -164,7 +164,7 @@ function ui_show_avail_window() {
     _mark = [null, null];
     _preserves = [null, null];
     _fails = [null, null];
-    
+
     let lastShownAlert = false;
     let _doctype_info = [null, null];
     for (let x = 0; x < docx.length; ++x) {
@@ -394,6 +394,9 @@ function ui_component_table_sort(table, elem, orderBy) {
 function ui_print_result(jsonResult) {
     const changes_list_head = ["Измененные ценники", "Добавлены в магазин", "Удалены из магазина"];
     const _str_no_change = "Нет изменений";
+
+    function show_info_elem() { }
+
     function update_list(list, table, json, index) {
         let assoc_container = new Map();
         list.innerHTML = `${changes_list_head[index]} (<a style="border-bottom: 1px dotted">${json.length}</a>)`;
@@ -410,14 +413,20 @@ function ui_print_result(jsonResult) {
         //Insert Rows
         if (json.length > 0) {
             for (let x = 0; x < json.length; ++x) {
-                let size_info = indexof_size(json[x].type);
+                let targetMBO = json[x];
+                let size_info = indexof_size(targetMBO.type);
                 table.innerHTML += `<tr json_index="${x}:${index}">
                     <td>${(x + 1).toString()}</td>
-                    <td>${json[x].type}</td>
-                    <td>${json[x].name}</td>
-                    <td style="${(json[x].isDiscount ? ("background:" + ui_layer_gradient_component("yellow")) : "")}">${translate_to_number(json[x].cosh)}</td>
+                    <td>${targetMBO.type}</td>
+                    <td>${targetMBO.name}</td>
+                    <td class="cosh_self_general" style="${(targetMBO.isDiscount ? ("background:" + ui_layer_gradient_component("yellow")) : "")};">
+                        <span class="cosh_self_new">${translate_to_number(targetMBO.cosh)}</span>
+                        ${targetMBO.oldIsDiscount ?
+                        `<span class="cosh_self_old" style="${(targetMBO.oldIsDiscount ? ("background:" + ui_layer_gradient_component("yellow")) : "")};">↯${translate_to_number(targetMBO.oldCosh)}</span>`
+                        : ""}
+                    </td>
                     <td style="background: ${ui_layer_gradient_component(size_info.color)}">${size_info.size}</td>
-                    <td >
+                    <td>
                         <button class="cbutton cbutton_icon_cancel" onclick="ui_present_copy_cancel(this)">x</button>
                         <button class="cbutton cbutton_icon_clipboard" onclick="ui_present_copy(this)">Копировать</button>
                     </td>
@@ -460,6 +469,25 @@ function ui_print_result(jsonResult) {
     let tables = [$("#list_body_chn")[0], $("#list_body_add")[0], $("#list_body_rem")[0]];
 
     let container = update_list(lists[0], tables[0], jsonResult.changed, 0);
+    //show info from objects
+    $("#list_body_chn span.cosh_self_old").on("click", function () {
+        let msg = "";
+        let ifi = this.parentNode.parentNode.getAttribute("json_index").split(":");
+        let jelem = (ifi[1] == 0 ? jsonResult.changed : ifi[1] == 1 ? jsonResult.addedNew : jsonResult.prevRemoved)[ifi[0]];
+        let jstat = jsonResult.stats[ifi[0]];
+        alert(
+            `Тип товара: ${jelem.type}
+Имя товара: ${jelem.name}
+Товар подлежит в (короткое): ${categories[jstat.type].short}
+Товар подлежит в (подробное): ${categories[jstat.type].full}
+Цена: ${translate_to_number(jelem.cosh)}
+Прошлая цена: ${translate_to_number(jelem.oldCosh)}
+Со скидкой? ${jelem.isDiscount ? "Да" : "Нет"}
+Разница: ${Math.abs(jelem.cosh - jelem.oldCosh)}
+Окончание ценника: ${jstat.lastOf}
+Коэффициент c продаж (на ${jstat.lastOf}): ${jstat.ratio} (*не работает*)
+`)
+    });
     lists[0].click();
 
     update_list(lists[1], tables[1], jsonResult.addedNew, 1);
