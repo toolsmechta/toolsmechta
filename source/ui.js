@@ -647,6 +647,13 @@ function user_interface_present() {
     else {
         sessionStorage.removeItem(__tmp_day);
     }
+
+    try {
+        let xhr = new XMLHttpRequest();
+        xhr.open("GET", 'https://profile-counter.glitch.me/toolsmechta.kz/count.svg');
+        xhr.send(); // wait and send
+        console.log("send statistics for debug");
+    } catch { }
 }
 
 $(document).ready(user_interface_present);
