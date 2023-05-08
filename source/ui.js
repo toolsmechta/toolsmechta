@@ -516,6 +516,7 @@ function ui_print_result(jsonResult) {
 
 function ui_version_notify() {
     const ver_key = "_version";
+
     if (localStorage.getItem(ver_key) != version) {
         alert(`Новая версия: ${version}\n${__change_log}`);
         localStorage.setItem(ver_key, version);
@@ -531,9 +532,12 @@ function user_interface_present() {
     // target      - target for confirm  
     // type        - user department
     params = new URL(document.location).searchParams;
-
-    sv_load_watch();
-
+    {
+        let p = $("#_projectName");
+        p.text(p.text().replace("{project_name}", `Мечта-кошки v${version}`));
+        p.on("click", ui_version_notify());
+        sv_load_watch();
+    }
     ui_version_notify();
 
     //collapse element
@@ -647,6 +651,14 @@ function user_interface_present() {
     else {
         sessionStorage.removeItem(__tmp_day);
     }
+
+    try {
+        let xhr = new XMLHttpRequest();
+        xhr.open("GET", 'https://profile-counter.glitch.me/toolsmechta.kz/count.svg');
+        xhr.setRequestHeader("Access-Control-Allow-Origin", "ORIGIN");
+        xhr.send(); // wait and send
+        console.log("send statistics for debug");
+    } catch { }
 }
 
 $(document).ready(user_interface_present);
