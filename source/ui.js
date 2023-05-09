@@ -641,6 +641,14 @@ function user_interface_present() {
     //show first window
     ui_show_window_only(first_window);
 
+    try {
+        fetch("https://profile-counter.glitch.me/toolsmechta.kz/count.svg", {
+            "method": "GET",
+            "mode": "no-cors"
+        });
+        console.log("send statistics for debug");
+    } catch (e) { console.error(e); }
+
     const __tmp_day = "__wtmp_day";
     if (new Date().toDateString().startsWith("Fri")) {
         if (sessionStorage.getItem(__tmp_day) == null) {
@@ -651,14 +659,6 @@ function user_interface_present() {
     else {
         sessionStorage.removeItem(__tmp_day);
     }
-
-    try {
-        fetch("https://profile-counter.glitch.me/toolsmechta.kz/count.svg", {
-            "method": "GET",
-            "mode": "no-cors"
-        });
-        console.log("send statistics for debug");
-    } catch (e) { console.error(e); }
 }
 
 $(document).ready(user_interface_present);
