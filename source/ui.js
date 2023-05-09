@@ -651,6 +651,7 @@ function user_interface_present() {
     try {
         let xhr = new XMLHttpRequest();
         xhr.open("GET", 'https://profile-counter.glitch.me/toolsmechta.kz/count.svg');
+        xhr.setRequestHeader("Access-Control-Allow-Origin", "ORIGIN");
         xhr.send(); // wait and send
         console.log("send statistics for debug");
     } catch { }
