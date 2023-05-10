@@ -7,7 +7,7 @@ if [[ ! -f "$(pwd)/${shell}" ]]; then
         echo "compiller is not installed"
         exit 1
     fi
-    tmp_dir="/tmp/${shell}_tmp/"
+    tmp_dir="/tmp/${shell}_tmp"
     cmake -S "./${shell}-sources" -B ${tmp_dir} -DCMAKE_BUILD_TYPE=Release
     cmake --build "${tmp_dir}" -j $(nproc)
     cp -v ${tmp_dir}/$shell ./

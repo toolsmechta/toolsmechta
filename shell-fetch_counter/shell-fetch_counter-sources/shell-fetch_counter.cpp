@@ -1,3 +1,5 @@
+/*MIT License*/
+
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -7,6 +9,7 @@
 #include <cstring>
 
 #define CURL_USE 1
+
 #if CURL_USE
 // use CURL
 #include <curl/curl.h>
@@ -58,12 +61,12 @@ int load()
         f.close();
     }
 
-    num = curlGetNum()-2;
+    num = curlGetNum();
 
     if (num != -1) {
         //save
         save(num);
-        num = std::abs(prevNum - num);
+        num = std::abs(prevNum - num) - /*Pop 1 elem for current session*/ 1 ;
     }
 
     return num;
