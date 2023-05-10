@@ -170,7 +170,7 @@ int curlGetNum()
 
     curl_easy_cleanup(curl);
 
-    int num = parseFromSvg(data.data);
+    int num = parseFromSvg(data.data)-1;
     std::free(data.data);
 
 #else
