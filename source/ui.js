@@ -1,6 +1,6 @@
 /*MIT License*/
 
-const version = "1.0.7";
+const version = "1.0.8";
 const haveLoad = true;
 const debug_mode = false;
 const cat_draw = true;
@@ -16,11 +16,9 @@ var windows = [];
 
 const __change_log =
     `
-+ Добавлен показатель предыдущей цены товара.
-+ Добавлена информация об коефицентности.
-* Исправлен показатель ценника.
-* Исправлены небольшие дэфекты в системе и прочее улучшения.
-* ZzZ - я пошел спать, устал! 
++ Добавлен размер ценников GSM!
+* Оптимизирован размер хранилищ.
+- Исправлены мелкие ошибки и баги.
 Приятной работы - Мечта мены! :)
 `;
 
@@ -65,8 +63,8 @@ function sv_save_watch() {
     _watcher.ticket.lastSaved = Date.now();
     _watcher.ticket.saved++;
     try {
-        console.log("shrinked data ", shrink(_watcher.data, 5));
-        console.log("shrinked sessions ", shrink(_watcher.sessions, 50));
+        console.log("shrinked data ", shrink(_watcher.data, 10));
+        console.log("shrinked sessions ", shrink(_watcher.sessions, 128));
         localStorage.setItem(localstorage_key, JSON.stringify(_watcher));
     } catch {
         console.error("failed save to localStorage");
@@ -237,8 +235,8 @@ function ui_show_avail_window() {
             //MECHTA_COSHKA_PARSER:avail
             try {
                 json = avail(true, _preserves[y]);
-            } catch (e) {
-                console.err(ex.message);
+            } catch (ex) {
+                console.error(ex.message);
                 alert("Системная ошибка модуля \"мечты-кошки\"\nПодробнее:\n\t" + ex.message);
                 return;
             }
@@ -272,8 +270,8 @@ function ui_show_avail_window() {
                 //State is loaded
                 try {
                     jsonResult = difference(_jsons[0], _jsons[1]);
-                } catch (e) {
-                    console.err(ex.message);
+                } catch (ex) {
+                    console.error(ex.message);
                     alert("Системная ошибка модуля \"мечты-кошки\"\nПодробнее:\n\t" + ex.message);
                     return;
                 }
