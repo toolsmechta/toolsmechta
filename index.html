@@ -13,127 +13,128 @@
 
 <body>
 	<!--This is LOGO WINDOW -->
-
-	<div style="display:none" id="window_logo" class="box">
-		<button class="fbutton" style="margin-left:auto"
-			onclick="action(Action.ACT_CLOSE_WINDOW, this.parentElement)">x</button>
-		<span class="logo"></span>
-		<p style="margin:auto; padding: 10px; text-align: center"></p>
-		<p style="background-color: yellow; margin:auto; padding: 10px; text-align: center">Цель мечты-кошки освободить
-			от рутины!</p>
-	</div>
-
-	<!--This is MAIN WINDOW -->
-
-	<div style="display:none" id="window_loader" class="box">
-		<span class="loader"></span>
-		<p id="loaderText">Подготавливаем ценники...</p>
-	</div>
-
-	<div style="display:none" id="window_data" class="box">
-		<div style="width: inherit; display: flex; justify-content: center;">
-			<label class="input-file cbutton">
-				<a class="input-file-icon"></a>
-				<span class="input-file-text" type="text">SELECT PREV MBO</span>
-				<input id="prev" accept=".html" type="file" name="file1">
-			</label>
-			<label class="input-file cbutton">
-				<a class="input-file-icon"></a>
-				<span class="input-file-text" type="text">SELECT NEXT MBO</span>
-				<input id="next" accept=".html" type="file" name="file2">
-			</label>
-			<br />
+	<div style="min-height: 500px">
+		<div style="display:none" id="window_logo" class="box">
+			<button class="fbutton" style="margin-left:auto"
+				onclick="action(Action.ACT_CLOSE_WINDOW, this.parentElement)">x</button>
+			<span class="logo"></span>
+			<p style="margin:auto; padding: 10px; text-align: center"></p>
+			<p style="background-color: yellow; margin:auto; padding: 10px; text-align: center">Цель мечты-кошки
+				освободить
+				от рутины!</p>
 		</div>
-		<button class="cbutton"
-			style="width: 300px; font-size: 15px; padding:10px; margin-top: 20px; margin-left: auto; margin-right: auto;"
-			id="do">
-			⇱ Загрузить</button>
-	</div>
 
-	<div style="display:none" id="window_table" class="box">
-		<button type="button" id="thead_change" class="cbutton collapsible" style="background: #f97500">Измененные
-			ценники (0)</button>
-		<div class="content">
-			<div class="cc">
-				<!--A6-->
-				<div class="cc_corner">
-					<span style="background-position: 0 0;" class="cc_image"></span>
-					<span class="cc_text">
-						<a>A6</a>
-						<a>{} лист(а)</a>
-						<a>{} шт</a>
-					</span>
-				</div>
-				<!--105x75-->
-				<div class="cc_corner">
-					<span style="background-position: -100px 0px;" class="cc_image"></span>
-					<span class="cc_text">
-						<a>105x75</a>
-						<a>{} лист(а)</a>
-						<a>{} шт</a>
-					</span>
-				</div>
-				<!--70x42-->
-				<div class="cc_corner">
-					<span style="background-position: 200px 0px;" class="cc_image"></span>
-					<span class="cc_text">
-						<a>70x42</a>
-						<a>{} лист(а)</a>
-						<a>{} шт</a>
-					</span>
-				</div>
-				<!--MBO-->
-				<div class="cc_corner">
-					<span style="background-position: 100px 0px;" class="cc_image"></span>
-					<span class="cc_text">
-						<a>МБО</a>
-						<a>{} лист(а)</a>
-						<a>{} шт</a>
-					</span>
-				</div>
+		<!--This is MAIN WINDOW -->
+
+		<div style="display:none" id="window_loader" class="box">
+			<span class="loader"></span>
+			<p id="loaderText">Подготавливаем ценники...</p>
+		</div>
+
+		<div style="display:none" id="window_data" class="box">
+			<div style="width: inherit; display: flex; justify-content: center;">
+				<label style="background:white" class="input-file cbutton">
+					<a class="input-file-icon"></a>
+					<span class="input-file-text" type="text">SELECT PREV MBO</span>
+					<input id="prev" accept=".html" type="file" name="file1">
+				</label>
+				<label style="background:white" class="input-file cbutton">
+					<a style="-webkit-transform: scaleX(-1); transform: scaleX(-1);" class="input-file-icon"></a>
+					<span class="input-file-text" type="text">SELECT NEXT MBO</span>
+					<input id="next" accept=".html" type="file" name="file2">
+				</label>
+				<br />
 			</div>
-			<table class="table">
-				<tbody id="list_body_chn">
-					<tr>
-						<th>№</th>
-						<th>Наименование</th>
-						<th>Цена</th>
-						<th>Действие</th>
-					</tr>
-				</tbody>
-			</table>
+			<button class="cbutton"
+				style="width: 300px; font-size: 15px; padding:10px; margin-top: 20px; margin-left: auto; margin-right: auto;"
+				id="do">
+				⇱ Загрузить</button>
 		</div>
 
-		<button type="button" id="thead_add" class="cbutton collapsible">Добавлены в магазин (0)</button>
-		<div class="content">
-			<table class="table">
-				<tbody id="list_body_add">
-					<tr>
-						<th>№</th>
-						<th>Наименование</th>
-						<th>Цена</th>
-						<th>Действие</th>
-					</tr>
-				</tbody>
-			</table>
-		</div>
+		<div style="display:none" id="window_table" class="box">
+			<button type="button" id="thead_change" class="cbutton collapsible" style="background: #f97500">Измененные
+				ценники (0)</button>
+			<div class="content">
+				<div class="cc">
+					<!--A6-->
+					<div class="cc_corner">
+						<span style="background-position: 0 0;" class="cc_image"></span>
+						<span class="cc_text">
+							<a>A6</a>
+							<a>{} лист(а)</a>
+							<a>{} шт</a>
+						</span>
+					</div>
+					<!--105x75-->
+					<div class="cc_corner">
+						<span style="background-position: -100px 0px;" class="cc_image"></span>
+						<span class="cc_text">
+							<a>105x75</a>
+							<a>{} лист(а)</a>
+							<a>{} шт</a>
+						</span>
+					</div>
+					<!--70x42-->
+					<div class="cc_corner">
+						<span style="background-position: 200px 0px;" class="cc_image"></span>
+						<span class="cc_text">
+							<a>70x42</a>
+							<a>{} лист(а)</a>
+							<a>{} шт</a>
+						</span>
+					</div>
+					<!--MBO-->
+					<div class="cc_corner">
+						<span style="background-position: 100px 0px;" class="cc_image"></span>
+						<span class="cc_text">
+							<a>МБО</a>
+							<a>{} лист(а)</a>
+							<a>{} шт</a>
+						</span>
+					</div>
+				</div>
+				<table class="table">
+					<tbody id="list_body_chn">
+						<tr>
+							<th>№</th>
+							<th>Наименование</th>
+							<th>Цена</th>
+							<th>Действие</th>
+						</tr>
+					</tbody>
+				</table>
+			</div>
 
-		<button type="button" id="thead_remove" class="cbutton collapsible">Удалены из магазина (0)</button>
-		<div class="content">
-			<table class="table">
-				<tbody id="list_body_rem">
-					<tr>
-						<th>№</th>
-						<th>Наименование</th>
-						<th>Цена</th>
-						<th>Действие</th>
-					</tr>
-				</tbody>
-			</table>
-		</div>
+			<button type="button" id="thead_add" class="cbutton collapsible">Добавлены в магазин (0)</button>
+			<div class="content">
+				<table class="table">
+					<tbody id="list_body_add">
+						<tr>
+							<th>№</th>
+							<th>Наименование</th>
+							<th>Цена</th>
+							<th>Действие</th>
+						</tr>
+					</tbody>
+				</table>
+			</div>
 
+			<button type="button" id="thead_remove" class="cbutton collapsible">Удалены из магазина (0)</button>
+			<div class="content">
+				<table class="table">
+					<tbody id="list_body_rem">
+						<tr>
+							<th>№</th>
+							<th>Наименование</th>
+							<th>Цена</th>
+							<th>Действие</th>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+		</div>
 	</div>
-
 	<footer class="box">
 		<span id="_projectName" style="padding: 10px; margin:auto" class="cbutton">__project__</span>
 		<p>Использование только в рамках проекта. Не является товарным знаком. Только свободное использование.</p>
