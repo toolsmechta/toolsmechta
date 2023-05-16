@@ -71,7 +71,7 @@ body {
 }
 
 .input-file span:after {
-	content: '⮉';
+	content: '\1F354';
 	position: absolute;
 	font-size: 90px;
 	opacity: 0;
@@ -80,11 +80,15 @@ body {
 	top: -100px;
 }
 
+.input-file:hover .input-file-icon{
+	background-position-x: 300px;
+}
+
 .input-file-icon {
-	background: url('./models/models.png') repeat-x;
+	background: url('./models/cat-eat.png') repeat-x;
 	background-size: cover;
 	position: relative;
-	background-position-x: -900px;
+	background-position-x: 0;
 	width: 300px; 
 	height: 348px;
 	border-radius: 30px;
@@ -116,8 +120,9 @@ body {
 }
 
 .input-file:hover span:after {
-	opacity: .5;
+	opacity: 1;
 	top: -174px;
+	color:white;
 }
 
 .fbutton {

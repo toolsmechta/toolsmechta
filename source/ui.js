@@ -17,6 +17,7 @@ var windows = [];
 
 const __change_log =
     `
++ Игра, накорми кошку!
 + Добавлен размер ценников для GSM!
 + Добавлены модели: KBT,MBT,SOP!
 * Оптимизирован размер хранилищ.
@@ -561,7 +562,7 @@ function user_interface_present() {
         });
     }
 
-    const _textMBO = ["Выберите предыдущий МБО", "Выберите следующий МБО"];
+    const _textMBO = ["◀ Выберите предыдущий МБО", "Выберите следующий МБО ▶"];
     let __files = $('.input-file input[type=file]');
     __files.on('change', function () {
         let file = this.files[0],
