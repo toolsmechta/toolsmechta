@@ -60,9 +60,7 @@ body {
 	align-items: stretch;
 	justify-content: center;
 	flex-wrap: wrap;
-	height: 200px;
 	font-size: 10px;
-	width: 300px;
 }
 
 .input-file span {
@@ -78,38 +76,48 @@ body {
 	font-size: 90px;
 	opacity: 0;
 	transition: 0.5s;
-	top: 0px;
-	left: 110px;
+	left: 39%;
+	top: -100px;
 }
 
 .input-file-icon {
-	background: url('./doc-icon.png') no-repeat;
-	background-size: contain;
+	background: url('./models/models.png') repeat-x;
+	background-size: cover;
 	position: relative;
-	top: 25px;
-	width: 90px;
-	height: 100pt;
+	background-position-x: -900px;
+	width: 300px; 
+	height: 348px;
+	border-radius: 30px;
+}
+
+.input-model-mbt {
+	background-position-x: 0px;
+}
+
+.input-model-kbt{
+	background-position-x: -300px;
+}
+
+.input-model-sop{
+	background-position-x: -600px;
 }
 
 .input-file-text {
-	visibility: visible;
 	text-align: left;
 	box-sizing: border-box;
 	padding: 10px 10px;
-	width: inherit;
 	transition: linear 1s;
-	border: none;
+	border: 1px dashed black;
 	color: black;
 	transition: all 0.5s;
-	cursor: pointer;
-	width: 300px;
 	font-size: 20px;
-	border-radius: 20px;
+	background-color: #e09a5f;
+	margin-bottom: 10px;
 }
 
 .input-file:hover span:after {
 	opacity: .5;
-	top: -150px;
+	top: -174px;
 }
 
 .fbutton {

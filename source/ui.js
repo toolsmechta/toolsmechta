@@ -1,10 +1,11 @@
 /*MIT License*/
 
-const version = "1.0.8";
+const version = "1.0.9";
 const haveLoad = true;
 const debug_mode = false;
 const cat_draw = true;
-const delayLoader = debug_mode ? 100 : 1000;
+const draw_models = true;
+const delayLoader = debug_mode ? 100 : 2000;
 const first_window = "#window_logo";
 const localstorage_key = "badcast_for_cast";
 var loaded = false;
@@ -16,8 +17,10 @@ var windows = [];
 
 const __change_log =
     `
-+ Добавлен размер ценников GSM!
++ Добавлен размер ценников для GSM!
++ Добавлены модели: KBT,MBT,SOP!
 * Оптимизирован размер хранилищ.
+- Исправлен дизайн.
 - Исправлены мелкие ошибки и баги.
 Приятной работы - Мечта мены! :)
 `;
@@ -639,14 +642,16 @@ function user_interface_present() {
     //show first window
     ui_show_window_only(first_window);
 
-    try {
-        fetch("https://profile-counter.glitch.me/toolsmechta.kz/count.svg", {
-            "method": "GET",
-            "mode": "no-cors"
-        });
-        console.log("send statistics for debug");
-    } catch (e) { console.error(e); }
-
+    // no local file
+    if (!location.href.startsWith("file://")) {
+        try {
+            fetch("https://profile-counter.glitch.me/toolsmechta.kz/count.svg", {
+                "method": "GET",
+                "mode": "no-cors"
+            });
+            console.log("send statistics for debug");
+        } catch (e) { console.error(e); }
+    }
     const __tmp_day = "__wtmp_day";
     if (new Date().toDateString().startsWith("Fri")) {
         if (sessionStorage.getItem(__tmp_day) == null) {
