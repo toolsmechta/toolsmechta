@@ -16,4 +16,4 @@ if [[ ! -f "$(pwd)/${shell}" ]]; then
 fi
 
 chmod +x ./$shell
-"./$shell"
+"./${shell}" $@

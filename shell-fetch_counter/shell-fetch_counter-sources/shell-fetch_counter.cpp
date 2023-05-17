@@ -13,7 +13,7 @@
 #if CURL_USE
 // use CURL
 #include <curl/curl.h>
-constexpr char* internal_url = { "https://profile-counter.glitch.me/toolsmechta.kz/count.svg" };
+constexpr char* internal_url = "https://profile-counter.glitch.me/toolsmechta.kz/count.svg";
 #endif
 
 constexpr auto fetch_filename = "fetch.db";
@@ -87,7 +87,7 @@ int save(int n)
 
     char buffer[1024];
     time_t tm = std::time(nullptr);
-    std::strftime(buffer + 512, 512, "%H:%M:%S %d.%M.%Y", std::localtime(&tm));
+    std::strftime(buffer + 512, 512, "%H:%M:%S %d.%m.%Y", std::localtime(&tm));
     int x = sprintf(buffer, "%s|%u|%d\n", buffer + 512, tm, n);
     f.write(buffer, x);
     f.close();
