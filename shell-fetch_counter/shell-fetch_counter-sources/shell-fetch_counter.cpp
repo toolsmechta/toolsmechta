@@ -7,94 +7,120 @@
 #include <string_view>
 #include <ctime>
 #include <cstring>
+#include <omp.h>
 
 #define CURL_USE 1
 
 #if CURL_USE
 // use CURL
 #include <curl/curl.h>
-constexpr char* internal_url = "https://profile-counter.glitch.me/toolsmechta.kz/count.svg";
+constexpr char* internal_url_start = "https://profile-counter.glitch.me/toolsmechta.kz";
+constexpr char* internal_url_end = "/count.svg";
 #endif
-
-constexpr auto fetch_filename = "fetch.db";
+constexpr int max_tp = 4;
+constexpr char types[max_tp][5] = { "\0OTH", "_kbt", "_mbt", "_gsm" };
+constexpr auto fetch_filename = "fetch";
+constexpr auto fetch_extension = ".db";
 
 struct url_data {
     size_t size;
     char* data;
 };
 
-int parseFromSvg(const std::string_view& svgBuffer);
-int curlGetNum();
-int load();
-int save(int n);
+int parse_svg(const std::string_view& svgBuffer);
+int fetch_num(const std::string& url);
+bool load(int tp_nums[4]);
+void save(int tp_nums[4]);
 
 std::fstream f;
 
+std::string get_fetch_url(int type) { return std::string(internal_url_start) + types[type] + internal_url_end; }
+
+std::string get_fetch_filename(int type) { return std::string(fetch_filename) + std::string(types[type]) + fetch_extension; }
+
 int main(int argc, char* argv[])
 {
-    int n;
-    std::cout << "Toolsmechta runned once: " << (n = load()) << " (count)" << std::endl;
+    int nums[max_tp];
+    std::cout << "Fetching ..." << std::endl;
+
+    if (!load(nums)) {
+        std::cerr << "failed" << std::endl;
+        return 1;
+    }
+    std::cout << "mechta-coshka runned once: " << std::endl;
+
+    for (int x = 0; x < max_tp; ++x) {
+        std::cout << "\t" << (types[x] + 1) << " = " << nums[x] << " (count)" << std::endl;
+    }
     return 0;
 }
 
-int load()
+bool load(int tp_nums[4])
 {
     using namespace std;
-    int num;
-    int prevNum = 0;
+    int tp_nums_save[4];
 
-    f.open(fetch_filename, std::ios_base::in);
+    std::cout << "Runned thread(s) " << max_tp << std::endl;
 
-    if (f.is_open()) {
-        char buf[64];
-        uint32_t y, len;
-        len = f.seekg(0, ios_base::end).tellg();
-        f.seekg(len - std::min(static_cast<uint32_t>(sizeof buf), len), ios_base::beg);
-        y = f.readsome(buf, sizeof buf) - 1;
+#pragma omp parallel for
+    for (size_t tp = 0; tp < max_tp; ++tp) {
 
-        for (int i = y; i > 0; --i) {
-            if (buf[i] == '|') {
-                prevNum = std::atoi(buf + 1 + i);
-                break;
+        std::fstream f;
+        int num;
+        int prevNum = 0;
+
+        f.open(get_fetch_filename(tp), std::ios_base::in);
+
+        if (f.is_open()) {
+            char buf[64];
+            uint32_t y, len;
+            len = f.seekg(0, ios_base::end).tellg();
+            f.seekg(len - std::min(static_cast<uint32_t>(sizeof buf), len), ios_base::beg);
+            y = f.readsome(buf, sizeof buf) - 1;
+
+            for (int i = y; i > 0; --i) {
+                if (buf[i] == '|') {
+                    prevNum = std::atoi(buf + 1 + i);
+                    break;
+                }
             }
+            f.close();
         }
+
+        num = fetch_num(get_fetch_url(tp));
+
+        if ((tp_nums[tp] = tp_nums_save[tp] = num) != -1)
+            tp_nums[tp] = std::abs(prevNum - num) - /*Pop 1 elem for current session*/ 1;
+    }
+    // save
+    save(tp_nums_save);
+    return true;
+}
+
+void save(int tp_nums[4])
+{
+    char buffer[1024];
+    for (int i = 0; i < max_tp; ++i) {
+        if (tp_nums[i] == -1) {
+            std::cerr << types[i] + 1 << " failed" << std::endl;
+            continue;
+        }
+        f.open(get_fetch_filename(i), std::ios_base::app);
+
+        if (!f.is_open()) {
+            std::cerr << "Failed a open file" << std::endl;
+            continue;
+        }
+
+        time_t tm = std::time(nullptr);
+        std::strftime(buffer + 512, 512, "%H:%M:%S %d.%m.%Y", std::localtime(&tm));
+        int x = sprintf(buffer, "%s|%u|%d\n", buffer + 512, tm, tp_nums[i]);
+        f.write(buffer, x);
         f.close();
     }
-
-    num = curlGetNum();
-
-    if (num != -1) {
-        //save
-        save(num);
-        num = std::abs(prevNum - num) - /*Pop 1 elem for current session*/ 1 ;
-    }
-
-    return num;
 }
 
-int save(int n)
-{
-    f.open(fetch_filename, std::ios_base::app);
-
-    if (!f.is_open()) {
-        std::cerr << "Failed a open file \"" << fetch_filename << "\"" << std::endl;
-        return -1;
-    }
-    if (!f) {
-        std::cerr << "save failed" << std::endl;
-        return -1;
-    }
-
-    char buffer[1024];
-    time_t tm = std::time(nullptr);
-    std::strftime(buffer + 512, 512, "%H:%M:%S %d.%m.%Y", std::localtime(&tm));
-    int x = sprintf(buffer, "%s|%u|%d\n", buffer + 512, tm, n);
-    f.write(buffer, x);
-    f.close();
-    return n;
-}
-
-int parseFromSvg(const std::string_view& svgBuffer)
+int parse_svg(const std::string_view& svgBuffer)
 {
     using namespace std;
     static auto const pattern = "tspan";
@@ -153,7 +179,7 @@ size_t write_data(void* ptr, size_t size, size_t nmemb, struct url_data* data)
     return size * nmemb;
 }
 
-int curlGetNum()
+int fetch_num(const std::string& url)
 {
 
 #if CURL_USE
@@ -162,18 +188,19 @@ int curlGetNum()
     url_data data {};
 
     curl = curl_easy_init();
-    curl_easy_setopt(curl, CURLOPT_URL, internal_url);
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &data);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
 
     res = curl_easy_perform(curl);
     if (res != CURLE_OK) {
-        fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+        // fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+        return -1;
     }
 
     curl_easy_cleanup(curl);
 
-    int num = parseFromSvg(data.data);
+    int num = parse_svg(data.data);
     std::free(data.data);
 
 #else

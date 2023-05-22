@@ -2,4 +2,5 @@ miniscript/
 backups/
 .vscode/
 shell-fetch_counter/shell-fetch_counter
-shell-fetch_counter/fetch.db
+shell-fetch_counter/fetch*
+build/*
