@@ -1,6 +1,6 @@
 /*MIT License*/
 
-const version = "1.0.9";
+const version = "1.1.0";
 const haveLoad = true;
 const debug_mode = false;
 const cat_draw = true;
@@ -17,10 +17,7 @@ var windows = [];
 
 const __change_log =
     `
-+ Игра, накорми кошку!
-+ Добавлен размер ценников для GSM!
-+ Добавлены модели: KBT,MBT,SOP!
-* Оптимизирован размер хранилищ.
+- Убрана Игра, накорми кошку!
 - Исправлен дизайн.
 - Исправлены мелкие ошибки и баги.
 Приятной работы - Мечта мены! :)
@@ -646,7 +643,15 @@ function user_interface_present() {
     // no local file
     if (!location.href.startsWith("file://")) {
         try {
-            fetch("https://profile-counter.glitch.me/toolsmechta.kz/count.svg", {
+            let type = params.get("type");
+            if(type != null){
+                type = "_" + type;
+            }
+            else {
+                type = ""; // empty
+            }
+            let url = `https://profile-counter.glitch.me/toolsmechta.kz${type}/count.svg`;
+            fetch(url, {
                 "method": "GET",
                 "mode": "no-cors"
             });

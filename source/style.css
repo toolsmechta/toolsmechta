@@ -71,7 +71,7 @@ body {
 }
 
 .input-file span:after {
-	content: '\1F354';
+	content: '\1F841';
 	position: absolute;
 	font-size: 90px;
 	opacity: 0;
