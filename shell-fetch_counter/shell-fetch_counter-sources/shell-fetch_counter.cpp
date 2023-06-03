@@ -1,6 +1,6 @@
 /*MIT License*/
 
-#include <cstdlib>
+#include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <string>
