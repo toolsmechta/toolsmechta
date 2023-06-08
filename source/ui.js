@@ -668,6 +668,9 @@ function user_interface_present() {
     else {
         sessionStorage.removeItem(__tmp_day);
     }
+    let t = "Учитывая последние обстоятельства в Мечта-мерке, проект будет перенесен в г. Алматы, и в скором времени данный сайт будет закрыт из за отуствие порядка использования и технического обслуживания. Спасибо за то, что пользовались Мечтой-кошкой!";
+    $("#_projectMessage").text(t);
+    alert(t);
 }
 
 $(document).ready(user_interface_present);
